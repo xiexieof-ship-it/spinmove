@@ -245,33 +245,66 @@
       font-size: 14px; font-weight: 600; cursor: pointer;
     }
 
-    /* 惊喜盒子 */
-    .box-big {
-      margin: 24px auto;
-      width: 200px; height: 200px;
-      background: linear-gradient(135deg, #FFB74D, #FF8A65);
-      border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 90px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    /* 惊喜盒子 —— 随机分布 5 个奖励 */
+    .box-area {
+      position: absolute;
+      top: 64px;
+      bottom: 80px;
+      left: 0; right: 0;
+      overflow: hidden;
+      background: #FFF8E1;
     }
-    .reward-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      gap: 6px;
-      padding: 0 12px;
-    }
-    .reward-cell {
+    .box-title {
+      position: absolute;
+      top: 16px; left: 0; right: 0;
       text-align: center;
-      padding: 10px 4px;
-      background: #FFEFC2;
-      border-radius: 10px;
-      font-size: 28px;
+      color: #8B6F47;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 0 16px;
     }
-    .reward-cell-label {
+    .reward-item {
+      position: absolute;
+      font-size: 54px;
+      width: 76px; height: 76px;
+      display: flex; align-items: center; justify-content: center;
+      background: #FFEFC2;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      cursor: pointer;
+      transition: transform .2s;
+      user-select: none;
+    }
+    .reward-item:active { transform: scale(0.92); }
+    .reward-item-label {
+      position: absolute;
+      bottom: -18px; left: 0; right: 0;
+      text-align: center;
       font-size: 11px;
       color: #8B6F47;
-      margin-top: 2px;
+    }
+
+    /* "太棒了" 全屏提示 */
+    .wow-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      animation: fadeIn .3s ease-out;
+    }
+    .wow-text {
+      font-size: 64px;
+      font-weight: 800;
+      color: #FFD700;
+      text-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 30px rgba(255,215,0,.6);
+      animation: popIn .5s cubic-bezier(.2,1.4,.5,1);
+      pointer-events: none;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn {
+      0% { transform: scale(.3); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
 
     /* 奖励设置 */
@@ -363,26 +396,29 @@
 
 
   <!-- ============================================================ -->
-  <!-- 页面 2：惊喜盒子                                              -->
+  <!-- 页面 2：惊喜盒子（5 个奖励随机分布）                             -->
   <!-- ============================================================ -->
   <div id="page-box" class="page hidden">
     <div class="app-bar" style="padding-left:16px;">
       <span style="font-size:22px;font-weight:600;color:#8B6F47;">🎁 惊喜盒子</span>
     </div>
-    <div class="body body-full">
-      <div class="box-big">🎁</div>
-      <div style="text-align:center;color:#8B6F47;font-size:15px;font-weight:600;margin:0 16px 16px;">
-        恭喜！你完成了 5 次运动，选一个奖励自己吧 ✨
+    <div class="box-area">
+      <div class="box-title">恭喜！完成 5 次运动，点一个奖励自己 ✨</div>
+      <!-- 5 个奖励，进入页面后由 JS 随机 top/left 放置 -->
+      <div class="reward-item" data-reward="0">
+        ❤️<div class="reward-item-label">爱心</div>
       </div>
-      <div class="reward-grid">
-        <div class="reward-cell">❤️<div class="reward-cell-label">爱心</div></div>
-        <div class="reward-cell">⭐<div class="reward-cell-label">星星</div></div>
-        <div class="reward-cell">🎆<div class="reward-cell-label">烟花</div></div>
-        <div class="reward-cell">🍰<div class="reward-cell-label">蛋糕</div></div>
-        <div class="reward-cell">�<div class="reward-cell-label">游戏</div></div>
+      <div class="reward-item" data-reward="1">
+        ⭐<div class="reward-item-label">星星</div>
       </div>
-      <div style="margin:24px 16px 0;text-align:center;">
-        <button class="btn-yes" style="width:180px;" onclick="show('page-home');resetCount();">收下奖励，继续加油！</button>
+      <div class="reward-item" data-reward="2">
+        🎆<div class="reward-item-label">烟花</div>
+      </div>
+      <div class="reward-item" data-reward="3">
+        🍰<div class="reward-item-label">蛋糕</div>
+      </div>
+      <div class="reward-item" data-reward="4">
+        🎮<div class="reward-item-label">游戏</div>
       </div>
     </div>
     <div class="nav-bar">
@@ -390,6 +426,11 @@
       <div class="nav-item" onclick="show('page-reward')"><span class="nav-icon">🎁</span>奖励</div>
       <div class="nav-item selected"><span class="nav-icon">🏆</span>盒子</div>
     </div>
+  </div>
+
+  <!-- "太棒了" 全屏提示（叠加层，默认隐藏） -->
+  <div id="wow-overlay" class="wow-overlay hidden" onclick="closeWow()">
+    <div class="wow-text">太棒了！</div>
   </div>
 
 
@@ -440,6 +481,55 @@
     ['page-home', 'page-box', 'page-reward'].forEach(id => document.getElementById(id).classList.add('hidden'));
     document.getElementById(target).classList.remove('hidden');
     document.getElementById('dialog-yesno').classList.add('hidden');
+    document.getElementById('wow-overlay').classList.add('hidden');
+
+    // 进入惊喜盒子 → 把 5 个奖励随机分布
+    if (target === 'page-box') {
+      setTimeout(shuffleRewards, 30);
+    }
+  }
+
+  // ===== 惊喜盒子：5 个奖励随机 top/left，避免互相重叠 =====
+  function shuffleRewards() {
+    const items = document.querySelectorAll('.reward-item');
+    const area = document.querySelector('.box-area');
+    const areaW = 375;
+    const areaH = 812 - 64 - 80; // 668px
+    const itemW = 76;
+    const itemH = 76 + 18; // 含 label 占位
+    const padTop = 70;     // 留空间给标题
+    const padSide = 12;
+    const padBottom = 16;
+
+    const placed = []; // 已放置的矩形 {x,y,w,h}
+
+    items.forEach(item => {
+      let x, y, tries = 0;
+      do {
+        x = padSide + Math.random() * (areaW - itemW - padSide * 2);
+        y = padTop + Math.random() * (areaH - itemH - padTop - padBottom);
+        tries++;
+      } while (tries < 60 && placed.some(r =>
+        x < r.x + r.w + 6 && x + itemW + 6 > r.x &&
+        y < r.y + r.h + 6 && y + itemH + 6 > r.y
+      ));
+      placed.push({ x, y, w: itemW, h: itemH });
+      item.style.left = x + 'px';
+      item.style.top = y + 'px';
+      // 轻微随机旋转，更活泼
+      item.style.transform = 'rotate(' + (Math.random() * 24 - 12).toFixed(1) + 'deg)';
+      item.onclick = onRewardTap;
+    });
+  }
+
+  // ===== 点击某个奖励 → 显示"太棒了！" =====
+  function onRewardTap() {
+    document.getElementById('wow-overlay').classList.remove('hidden');
+  }
+
+  // ===== 点任意位置 → "太棒了" 消失 =====
+  function closeWow() {
+    document.getElementById('wow-overlay').classList.add('hidden');
   }
 
   // ===== 点击转盘 → 旋转 → 减速 → 停下高亮 =====
