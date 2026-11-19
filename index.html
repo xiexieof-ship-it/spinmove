@@ -461,6 +461,39 @@
 
 
 <script>
+  // =====================================================
+  // STORAGE —— 对应 Flutter 的 shared_preferences
+  // 选型三问：count(int) / history(整体一份 JSON) / rewards(配置)
+  // → 都是"少量键值 / 整体一份" → localStorage ✅
+  // =====================================================
+  const K = {
+    COUNT:    'sm_count',
+    HISTORY:  'sm_history',   // [{emoji, name, time}]
+    REWARDS:  'sm_rewards'    // [{emoji, label}]
+  };
+
+  const DEFAULTS = {
+    REWARDS: [
+      { emoji: '❤️', label: '爱心' },
+      { emoji: '⭐', label: '星星' },
+      { emoji: '🎆', label: '烟花' },
+      { emoji: '🍰', label: '蛋糕' },
+      { emoji: '🎮', label: '游戏' }
+    ]
+  };
+
+  // —— 读写封装（像 sp.setInt / sp.getStringList） ——
+  function spSetInt(key, val)   { localStorage.setItem(key, String(val)); }
+  function spGetInt(key, d=0)   { const v = localStorage.getItem(key); return v === null ? d : parseInt(v); }
+  function spSetList(key, list) { localStorage.setItem(key, JSON.stringify(list)); }
+  function spGetList(key, d=[]) {
+    try { const v = localStorage.getItem(key); return v === null ? d : JSON.parse(v); }
+    catch(e) { return d; }
+  }
+
+  // =====================================================
+  // 业务数据
+  // =====================================================
   const SPORTS = [
     { emoji: '🏃', name: '跑步' },
     { emoji: '🏸', name: '羽毛球' },
@@ -470,38 +503,86 @@
   ];
 
   const SECTORS = 5;
-  const DEG = 360 / SECTORS; // 72°
+  const DEG = 360 / SECTORS;
 
-  let isSpinning = false;    // 正在旋转中，禁止点击
-  let currentSelected = -1;  // 最终停在哪个扇形
+  let isSpinning = false;
+  let currentSelected = -1;
   let count = 0;
+  let history = [];   // [{emoji, name, time}]
+  let rewards = [];   // [{emoji, label}]
 
-  // ===== 页面切换 =====
+  // =====================================================
+  // init —— 对应 Flutter initState 加载 sp 到成员变量
+  // =====================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    count   = spGetInt(K.COUNT, 0);
+    history = spGetList(K.HISTORY, []);
+    rewards = spGetList(K.REWARDS, DEFAULTS.REWARDS);
+
+    updateCounter();
+    renderHistory();
+    renderRewardsSetting();
+  });
+
+  // =====================================================
+  // UI 渲染
+  // =====================================================
+  function updateCounter() {
+    document.getElementById('counter-num').textContent = count;
+    document.getElementById('counter-text').textContent = count;
+    document.getElementById('counter-fill').style.width = (count / 5 * 100) + '%';
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!history.length) {
+      list.innerHTML = '<div style="text-align:center;color:#A88960;font-size:13px;padding:16px;">今天还没记录哦～点上面转盘开始吧 ✨</div>';
+      return;
+    }
+    list.innerHTML = history.map(h =>
+      `<div class="history-item">${h.emoji} ${h.name}<span class="history-time">${h.time}</span></div>`
+    ).join('');
+  }
+
+  function renderRewardsSetting() {
+    const container = document.querySelector('#page-reward .body');
+    if (!container) return;
+    // 只替换 setting-row 区域，保留底部 "保存" 按钮
+    const rows = rewards.map((r, i) =>
+      `<div class="setting-row">
+         <span class="setting-icon">${r.emoji}</span>
+         <span class="setting-label">奖励 ${i+1}：${r.label}</span>
+       </div>`
+    ).join('');
+    container.innerHTML = `
+      <div class="section-title">5 个奖励（可点击编辑）</div>
+      ${rows}
+      <div style="margin:16px;text-align:center;color:#A88960;font-size:11px;">（数据持久化存储，刷新不丢）</div>
+      <div class="bottom-pad"></div>
+    `;
+  }
+
+  // =====================================================
+  // 页面切换
+  // =====================================================
   function show(target) {
     ['page-home', 'page-box', 'page-reward'].forEach(id => document.getElementById(id).classList.add('hidden'));
     document.getElementById(target).classList.remove('hidden');
     document.getElementById('dialog-yesno').classList.add('hidden');
     document.getElementById('wow-overlay').classList.add('hidden');
 
-    // 进入惊喜盒子 → 把 5 个奖励随机分布
-    if (target === 'page-box') {
-      setTimeout(shuffleRewards, 30);
-    }
+    if (target === 'page-box') setTimeout(shuffleRewards, 30);
   }
 
-  // ===== 惊喜盒子：5 个奖励随机 top/left，避免互相重叠 =====
+  // =====================================================
+  // 惊喜盒子：随机分布
+  // =====================================================
   function shuffleRewards() {
     const items = document.querySelectorAll('.reward-item');
-    const area = document.querySelector('.box-area');
-    const areaW = 375;
-    const areaH = 812 - 64 - 80; // 668px
-    const itemW = 76;
-    const itemH = 76 + 18; // 含 label 占位
-    const padTop = 70;     // 留空间给标题
-    const padSide = 12;
-    const padBottom = 16;
-
-    const placed = []; // 已放置的矩形 {x,y,w,h}
+    const areaW = 375, areaH = 812 - 64 - 80;
+    const itemW = 76, itemH = 76 + 18;
+    const padTop = 70, padSide = 12, padBottom = 16;
+    const placed = [];
 
     items.forEach(item => {
       let x, y, tries = 0;
@@ -516,23 +597,21 @@
       placed.push({ x, y, w: itemW, h: itemH });
       item.style.left = x + 'px';
       item.style.top = y + 'px';
-      // 轻微随机旋转，更活泼
       item.style.transform = 'rotate(' + (Math.random() * 24 - 12).toFixed(1) + 'deg)';
       item.onclick = onRewardTap;
     });
   }
 
-  // ===== 点击某个奖励 → 显示"太棒了！" =====
   function onRewardTap() {
     document.getElementById('wow-overlay').classList.remove('hidden');
   }
-
-  // ===== 点任意位置 → "太棒了" 消失 =====
   function closeWow() {
     document.getElementById('wow-overlay').classList.add('hidden');
   }
 
-  // ===== 点击转盘 → 旋转 → 减速 → 停下高亮 =====
+  // =====================================================
+  // 转盘
+  // =====================================================
   function onWheelTap() {
     if (isSpinning) return;
     isSpinning = true;
@@ -542,83 +621,83 @@
     wheel.classList.remove('done');
     document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
 
-    // 随机选一个扇形（模拟你"选到什么"的结果，也可以改成用户点击的那个）
     currentSelected = Math.floor(Math.random() * SECTORS);
-
-    // 计算让这个扇形对准顶部指针需要旋转多少度
-    // 扇形中心角 center = currentSelected * 72 + 36
-    // 要让它转到 0°，转盘要转 (360 - center + extraTurns * 360)
     const center = currentSelected * DEG + DEG / 2;
-    const extraTurns = 3; // 额外转 3 圈，视觉上更像"转了一会儿停下来"
-    const targetDeg = 360 - center + extraTurns * 360;
-
-    // 触发旋转动画（transition 4.5s cubic-bezier 减速）
+    const targetDeg = 360 - center + 3 * 360;
     wheel.style.transform = `rotate(${targetDeg}deg)`;
 
-    // 4.5s 后动画结束 → 停下、高亮、弹 Dialog
     setTimeout(() => {
       isSpinning = false;
       wheel.classList.remove('spinning');
       wheel.classList.add('done');
 
-      // 高亮选中 label
       document.querySelectorAll('.wheel-label').forEach(el => {
-        if (parseInt(el.dataset.index) === currentSelected) {
-          el.classList.add('selected-label');
-        }
+        if (parseInt(el.dataset.index) === currentSelected) el.classList.add('selected-label');
       });
 
-      // 弹 Dialog
       const sport = SPORTS[currentSelected];
       document.getElementById('selected-sport').textContent = `${sport.emoji} ${sport.name}`;
       document.getElementById('dialog-yesno').classList.remove('hidden');
     }, 4600);
   }
 
-  // ===== Dialog · No → 重置转盘，继续转 =====
+  // =====================================================
+  // Dialog 按钮
+  // =====================================================
   function onNo() {
     document.getElementById('dialog-yesno').classList.add('hidden');
     resetWheel();
   }
 
-  // ===== Dialog · Yes → 计数 +1 =====
   function onYes() {
     document.getElementById('dialog-yesno').classList.add('hidden');
     resetWheel();
 
+    const sport = SPORTS[currentSelected];
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ap = hh < 12 ? '上午' : '下午';
+    const h12 = hh < 12 ? hh : String(now.getHours()-12).padStart(2,'0');
+    const time = `${ap} ${h12}:${mm}`;
+
+    // —— 业务逻辑 + 持久化（sp.setInt / sp.setStringList）——
     count++;
+    history.unshift({ emoji: sport.emoji, name: sport.name, time });
+
+    spSetInt(K.COUNT, count);
+    spSetList(K.HISTORY, history);
+
     updateCounter();
+    renderHistory();
 
     if (count >= 5) {
       count = 0;
+      spSetInt(K.COUNT, count);
       updateCounter();
       setTimeout(() => show('page-box'), 400);
     }
   }
 
-  // ===== 重置转盘（回到 0° 静态） =====
   function resetWheel() {
     const wheel = document.getElementById('wheel');
-    // 先关闭 transition，瞬间归零
     wheel.style.transition = 'none';
     wheel.style.transform = 'rotate(0deg)';
-    void wheel.offsetWidth; // 强制 reflow
-    // 恢复 transition
+    void wheel.offsetWidth;
     wheel.style.transition = '';
     wheel.classList.remove('done');
     document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
     currentSelected = -1;
   }
 
+  // 盒子页"收下奖励"按钮：清空历史 + 计数归零 + 跳首页
   function resetCount() {
     count = 0;
+    history = [];
+    spSetInt(K.COUNT, count);
+    spSetList(K.HISTORY, history);
     updateCounter();
-  }
-
-  function updateCounter() {
-    document.getElementById('counter-num').textContent = count;
-    document.getElementById('counter-text').textContent = count;
-    document.getElementById('counter-fill').style.width = (count / 5 * 100) + '%';
+    renderHistory();
   }
 </script>
 
