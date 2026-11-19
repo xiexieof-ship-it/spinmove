@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, user-scalable=no">
+  <title>SportSpinner · 原型骨架</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 375px; background: #eee; font-family: sans-serif; }
+
+    .phone-frame { width: 375px; height: 812px; background: #fff; margin: 0 auto; position: relative; overflow: hidden; border: 2px solid #333; }
+
+    .page { width: 375px; height: 812px; position: absolute; top: 0; left: 0; }
+    .page.hidden { display: none; }
+
+    .app-bar { height: 64px; width: 375px; position: absolute; top: 0; left: 0; background: #fff; border-bottom: 1px dashed #999; padding-top: 24px; display: flex; align-items: center; }
+    .body { position: absolute; top: 64px; bottom: 80px; left: 0; right: 0; overflow-y: auto; background: #fafafa; }
+    .body-full { bottom: 0; }
+    .nav-bar { height: 80px; width: 375px; position: absolute; bottom: 0; left: 0; background: #fff; border-top: 1px dashed #999; display: flex; }
+
+    .tag { display: inline-block; font-size: 11px; color: #888; background: #f0f0f0; padding: 1px 6px; border-radius: 3px; margin: 2px; }
+    .block { margin: 4px 8px; padding: 6px 10px; background: #f5f5f5; border: 1px solid #ddd; font-size: 12px; color: #555; }
+    .section-title { font-size: 14px; color: #666; margin: 8px 12px 4px; border-left: 3px solid #aaa; padding-left: 6px; }
+    .click-hint { font-size: 11px; color: #c0392b; font-weight: bold; }
+
+    /* ============== 旋转转盘 ============== */
+    .wheel-wrap {
+      position: relative;
+      margin: 0 auto;
+      width: 280px;
+      height: 280px;
+    }
+    .wheel-pointer {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 28px solid #c0392b;
+      z-index: 3;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.3));
+    }
+    .wheel-pointer::after {
+      content: "";
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #c0392b;
+      border: 3px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .wheel {
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      /* 5 个扇形 conic-gradient，各 72° */
+      background: conic-gradient(
+        #FFD8E4 0deg 72deg,
+        #E7E0FF 72deg 144deg,
+        #CDE7BE 144deg 216deg,
+        #FCD5CE 216deg 288deg,
+        #FFE0B2 288deg 360deg
+      );
+      border: 6px solid #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2), inset 0 0 0 1px rgba(0,0,0,.05);
+      position: relative;
+      animation: wheelSpin 4s linear infinite;
+      animation-play-state: running;
+      transition: box-shadow .3s;
+      cursor: pointer;
+    }
+    .wheel.stopped {
+      animation-play-state: paused;
+    }
+    .wheel.stopped.highlight {
+      box-shadow: 0 0 0 4px #FFD700, 0 4px 16px rgba(0,0,0,.2);
+    }
+    @keyframes wheelSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    /* 5 个扇形文字标签（跟随转盘旋转） */
+    .wheel-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 72px;
+      text-align: center;
+      transform-origin: 0 0;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      pointer-events: none;
+      animation: wheelSpin 4s linear infinite;
+      animation-play-state: running;
+    }
+    .wheel.stopped + .wheel-label-layer .wheel-label,
+    .wheel.stopped ~ .wheel-label-layer .wheel-label {
+      animation-play-state: paused;
+    }
+    /* 转盘中心装饰 */
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border-radius: 50%;
+      border: 4px solid #ddd;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    /* 被选中扇形的 label 高亮 */
+    .wheel-label.selected-label {
+      color: #c0392b;
+      font-weight: 700;
+      font-size: 15px;
+      text-shadow: 0 0 8px rgba(192,57,43,.4);
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ============================================================= -->
+  <!-- 页面 1：首页 · 扇形选择                                         -->
+  <!-- Flutter: Scaffold + AppBar + Stack(扇形) + AlertDialog + NavigationBar -->
+  <!-- ============================================================= -->
+  <div id="page-home" class="page">
+
+    <div class="app-bar">
+      <span class="tag">AppBar</span>
+      <span style="margin-left:8px;">🏃 运动记录</span>
+    </div>
+
+    <div class="body">
+
+      <div class="section-title">扇形选择器</div>
+
+      <!-- ===== 旋转转盘（5 扇形 conic-gradient + @keyframes） ===== -->
+      <!-- Flutter: Stack + CustomPaint(WheelPainter) + AnimatedBuilder + GestureDetector -->
+      <div class="wheel-wrap">
+        <!-- 固定指针（12 点方向，不动） -->
+        <div class="wheel-pointer"></div>
+        <!-- 转盘本体（conic-gradient 5 扇形，@keyframes wheelSpin 旋转） -->
+        <div id="wheel" class="wheel" onclick="onWheelClick()">
+          <!-- 5 个扇形 label（跟随 wheel 一起旋转，各自初始 rotate 定位到扇形中心） -->
+          <!-- 扇形中心角：i*72°+36°，向外 translate(0,-105px) -->
+          <div class="wheel-label" data-index="0" style="transform: rotate(36deg)  translate(0, -105px);">🏃<br>跑步</div>
+          <div class="wheel-label" data-index="1" style="transform: rotate(108deg) translate(0, -105px);">🏸<br>羽毛球</div>
+          <div class="wheel-label" data-index="2" style="transform: rotate(180deg) translate(0, -105px);">🏓<br>乒乓球</div>
+          <div class="wheel-label" data-index="3" style="transform: rotate(252deg) translate(0, -105px);">💃<br>跳舞</div>
+          <div class="wheel-label" data-index="4" style="transform: rotate(324deg) translate(0, -105px);">🏊<br>游泳</div>
+          <!-- 中心装饰圆 -->
+          <div class="wheel-center">🎯</div>
+        </div>
+      </div>
+
+      <!-- ===== 计数 ===== -->
+      <!-- Flutter: Row → Column(Text("当前 X/5")) -->
+      <div class="section-title">计数</div>
+      <div class="block">
+        <span class="tag">Text</span> 当前完成 <b>3</b> / 5 次<br>
+        <span class="tag">LinearProgressIndicator</span> 进度条
+      </div>
+
+      <!-- ===== 历史记录 ===== -->
+      <!-- Flutter: ListTile × N -->
+      <div class="section-title">今日记录</div>
+      <div class="block"><span class="tag">ListTile</span> 跑步 · 上午 09:30</div>
+      <div class="block"><span class="tag">ListTile</span> 羽毛球 · 下午 14:00</div>
+      <div class="block"><span class="tag">ListTile</span> 跳舞 · 晚上 19:15</div>
+
+      <div style="height: 24px;"></div>
+    </div>
+
+    <!-- ===== NavigationBar ===== -->
+    <div class="nav-bar">
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        NavigationDestination(Icon(Icons.home), Text("首页"))<br>
+        <span class="tag" style="background:#fff3cd;color:#856404;">selected</span>
+      </div>
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="show('page-reward')">
+        NavigationDestination(Icon(Icons.card_giftcard), Text("奖励"))
+      </div>
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="show('page-box')">
+        NavigationDestination(Icon(Icons.emoji_events), Text("盒子"))
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================= -->
+  <!-- Dialog：Yes / No 弹窗（叠加在首页上方）                          -->
+  <!-- Flutter: showDialog → AlertDialog                              -->
+  <!-- ============================================================= -->
+  <div id="dialog-yesno" class="page hidden" style="background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center;">
+    <div style="width:280px; background:#fff; border-radius:12px; padding:24px; box-shadow:0 8px 32px rgba(0,0,0,.3);">
+      <div style="font-size:16px; font-weight:600; color:#333; margin-bottom:12px;">确认记录</div>
+      <div style="font-size:18px; color:#c0392b; margin-bottom:20px; text-align:center; padding:16px; background:#FFF8F6; border-radius:8px;">
+        你选中了 <b id="selected-sport">跑步 🏃</b>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button onclick="onNo()" style="flex:1; padding:12px; border:1px solid #ccc; background:#fff; border-radius:8px; cursor:pointer; font-size:14px; color:#555;">No · 继续转</button>
+        <button onclick="onYes()" style="flex:1; padding:12px; border:none; background:#6352FF; color:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500;">Yes · 记录</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================= -->
+  <!-- 页面 2：惊喜盒子页（5 次满自动跳）                               -->
+  <!-- Flutter: Scaffold + AppBar + Column + GridView(5 奖励)         -->
+  <!-- ============================================================= -->
+  <div id="page-box" class="page hidden">
+
+    <div class="app-bar">
+      <span class="tag">AppBar</span>
+      <span style="margin-left:8px;">🎁 惊喜盒子</span>
+    </div>
+
+    <div class="body">
+
+      <!-- ===== 大盒子占位 ===== -->
+      <div class="section-title">盒子主体</div>
+      <div class="block" style="margin:0 auto; width:200px; height:200px; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+        <span class="tag">Container</span><br>
+        大盒子 emoji <b>🎁</b><br>
+        <span class="click-hint">[点击盒子 → 展开 5 个奖励项]</span>
+      </div>
+
+      <!-- ===== 奖励列表 ===== -->
+      <!-- Flutter: GridView.count(crossAxisCount=5, children: [Container × 5]) -->
+      <div class="section-title">奖励列表（5 个）</div>
+      <div class="block" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; margin:4px 8px;">
+        <div class="block" style="margin:0;"><span class="tag">Container</span> ❤️ 爱心</div>
+        <div class="block" style="margin:0;"><span class="tag">Container</span> ⭐ 星星</div>
+        <div class="block" style="margin:0;"><span class="tag">Container</span> 🎆 烟花</div>
+        <div class="block" style="margin:0;"><span class="tag">Container</span> 🍰 蛋糕</div>
+        <div class="block" style="margin:0;"><span class="tag">Container</span> 🎮 游戏</div>
+      </div>
+
+      <div class="block">
+        <span class="tag">ElevatedButton</span>
+        Text("去设置我的奖励")
+        <span class="click-hint">[点击 → 跳到奖励设置页]</span>
+      </div>
+
+      <div style="height: 24px;"></div>
+    </div>
+
+    <div class="nav-bar">
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="show('page-home')">NavigationDestination(Icon(Icons.home), Text("首页"))</div>
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="show('page-reward')">NavigationDestination(Icon(Icons.card_giftcard), Text("奖励"))</div>
+      <div class="block" style="flex:1;margin:0;border:none;border-right:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;">NavigationDestination(Icon(Icons.emoji_events), Text("盒子"))<br><span class="tag" style="background:#fff3cd;color:#856404;">selected</span></div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================= -->
+  <!-- 页面 3：奖励设置页（最多 5 个，自行输入，配 emoji 图标）          -->
+  <!-- Flutter: Scaffold + AppBar + Form + TextField × 5 + ElevatedButton -->
+  <!-- ============================================================= -->
+  <div id="page-reward" class="page hidden">
+
+    <div class="app-bar">
+      <span class="tag">AppBar</span>
+      <span style="margin-left:8px;">🎁 奖励设置</span>
+    </div>
+
+    <div class="body body-full">
+
+      <!-- ===== TextField 1 ===== -->
+      <div class="section-title">奖励 1</div>
+      <div class="block">
+        <span class="tag">TextField</span>
+        prefixIcon: Icon(Icons.favorite) &nbsp;
+        decoration: InputDecoration(hintText: "输入你的第一个奖励")<br>
+        对应图标：❤️ 爱心
+      </div>
+
+      <!-- ===== TextField 2 ===== -->
+      <div class="section-title">奖励 2</div>
+      <div class="block">
+        <span class="tag">TextField</span>
+        prefixIcon: Icon(Icons.star) &nbsp;
+        decoration: InputDecoration(hintText: "输入你的第二个奖励")<br>
+        对应图标：⭐ 星星
+      </div>
+
+      <!-- ===== TextField 3 ===== -->
+      <div class="section-title">奖励 3</div>
+      <div class="block">
+        <span class="tag">TextField</span>
+        prefixIcon: Icon(Icons.celebration) &nbsp;
+        decoration: InputDecoration(hintText: "输入你的第三个奖励")<br>
+        对应图标：🎆 烟花
+      </div>
+
+      <!-- ===== TextField 4 ===== -->
+      <div class="section-title">奖励 4</div>
+      <div class="block">
+        <span class="tag">TextField</span>
+        prefixIcon: Icon(Icons.cake) &nbsp;
+        decoration: InputDecoration(hintText: "输入你的第四个奖励")<br>
+        对应图标：🍰 蛋糕
+      </div>
+
+      <!-- ===== TextField 5 ===== -->
+      <div class="section-title">奖励 5</div>
+      <div class="block">
+        <span class="tag">TextField</span>
+        prefixIcon: Icon(Icons.sports_esports) &nbsp;
+        decoration: InputDecoration(hintText: "输入你的第五个奖励")<br>
+        对应图标：🎮 游戏
+      </div>
+
+      <!-- ===== 保存按钮 ===== -->
+      <div class="block">
+        <span class="tag">ElevatedButton</span>
+        ElevatedButton(Text("保存奖励设置"))
+      </div>
+
+      <div style="height: 24px;"></div>
+    </div>
+  </div>
+
+
+</div>
+
+
+<script>
+  // 5 个运动项目（与 HTML wheel-label data-index 对应）
+  const SPORTS = [
+    { emoji: '🏃', name: '跑步' },
+    { emoji: '🏸', name: '羽毛球' },
+    { emoji: '🏓', name: '乒乓球' },
+    { emoji: '💃', name: '跳舞' },
+    { emoji: '🏊', name: '游泳' }
+  ];
+
+  const SECTORS = 5;           // 5 个扇形
+  const DEG_PER_SECTOR = 360 / SECTORS;  // 72°
+
+  let wheelState = 'running';  // running / stopped
+  let currentSelected = -1;
+  let count = 0;                // 当前计数 0..5
+
+  // ===== 页面切换 =====
+  function show(target) {
+    ['page-home', 'page-box', 'page-reward'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(target).classList.remove('hidden');
+    document.getElementById('dialog-yesno').classList.add('hidden');
+  }
+
+  // ===== 转盘停止后计算指针指向的扇形 index =====
+  // CSS transform matrix 形如 matrix(cosR, sinR, -sinR, cosR, tx, ty)
+  function extractAngleDeg(transformStr) {
+    const m = transformStr.match(/matrix\((.+)\)/);
+    if (!m) return 0;
+    const v = m[1].split(',').map(parseFloat);
+    return Math.round(Math.atan2(v[1], v[0]) * 180 / Math.PI);
+  }
+
+  // 转盘当前顺时针旋转了 R°，指针在顶部 0°，反算指针相对转盘的位置
+  // 转盘上角度 α 现在在屏幕角度 (α+R) mod 360
+  // 指针 α 满足 α + R ≡ 0 (mod 360) → α = (360 - R%360) % 360
+  function computeSelectedIndex() {
+    const wheel = document.getElementById('wheel');
+    const R = extractAngleDeg(getComputedStyle(wheel).transform);
+    const alpha = ((360 - (R % 360)) % 360);
+    return Math.floor(alpha / DEG_PER_SECTOR);
+  }
+
+  // ===== 点击转盘 =====
+  function onWheelClick() {
+    if (wheelState !== 'running') return;
+
+    const wheel = document.getElementById('wheel');
+    wheel.classList.add('stopped');
+    wheelState = 'stopped';
+
+    currentSelected = computeSelectedIndex();
+    const sport = SPORTS[currentSelected];
+
+    // 高亮转盘外圈 + 选中 label 变色
+    wheel.classList.add('highlight');
+    document.querySelectorAll('.wheel-label').forEach(lbl => {
+      lbl.classList.toggle('selected-label', parseInt(lbl.dataset.index) === currentSelected);
+    });
+
+    // 动态更新 Dialog 内容 + 弹出
+    document.getElementById('selected-sport').textContent = `${sport.emoji} ${sport.name}`;
+    document.getElementById('dialog-yesno').classList.remove('hidden');
+  }
+
+  // ===== Dialog · No：重置继续转 =====
+  function onNo() {
+    document.getElementById('dialog-yesno').classList.add('hidden');
+    const wheel = document.getElementById('wheel');
+    wheel.classList.remove('stopped', 'highlight');
+    document.querySelectorAll('.wheel-label.selected-label').forEach(lbl => lbl.classList.remove('selected-label'));
+    wheelState = 'running';
+    currentSelected = -1;
+    // CSS animation 从暂停位置继续，无需额外处理
+  }
+
+  // ===== Dialog · Yes：计数 +1；满 5 归零跳盒子页 =====
+  function onYes() {
+    document.getElementById('dialog-yesno').classList.add('hidden');
+    const wheel = document.getElementById('wheel');
+    wheel.classList.remove('stopped', 'highlight');
+    document.querySelectorAll('.wheel-label.selected-label').forEach(lbl => lbl.classList.remove('selected-label'));
+    wheelState = 'running';
+    currentSelected = -1;
+
+    count++;
+    // 计数到 5 → 归零 + 跳惊喜盒子
+    if (count >= 5) {
+      count = 0;
+      setTimeout(() => show('page-box'), 300);
+    }
+  }
+
+  // ===== 全局点击拦截：只在 wheel 上触发，其他区域不干扰 =====
+  document.addEventListener('DOMContentLoaded', () => {
+    // 确保初始状态
+    wheelState = 'running';
+  });
+</script>
+
+</body>
+</html>
