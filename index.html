@@ -2,18 +2,47 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=375, user-scalable=no">
-  <title>SportSpinner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFF8E1">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%23FFF8E1'/%3E%3Ccircle cx='96' cy='96' r='56' fill='%23ff8a65'/%3E%3Ctext x='96' y='114' font-family='sans-serif' font-size='56' text-anchor='middle'%3E🎯%3C/text%3E%3C/svg%3E">
+  <title>SportSpinner · 运动打卡</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 375px; background: #eee; font-family: -apple-system, Roboto, system-ui, sans-serif; }
-
-    .phone-frame {
-      width: 375px; height: 812px;
-      background: #FFF8E1;
-      margin: 0 auto; position: relative; overflow: hidden;
+    html, body {
+      width: 100%; min-height: 100%;
+      background: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, Roboto, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    .page { width: 375px; height: 812px; position: absolute; top: 0; left: 0; }
+
+    /* 响应式：手机用全屏，桌面显示居中手机框 */
+    .phone-frame {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: #FFF8E1;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 600px) {
+      .phone-frame {
+        width: 375px;
+        max-width: 375px;
+        min-height: 812px;
+        height: 812px;
+        margin: 20px auto;
+        border: 2px solid #333;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      }
+    }
+    .page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
     .hidden { display: none !important; }
     .body {
       position: absolute; top: 64px; bottom: 80px; left: 0; right: 0;
@@ -22,7 +51,7 @@
     .body-full { bottom: 0; }
 
     .app-bar {
-      height: 64px; width: 375px;
+      height: 64px; width: 100%;
       position: absolute; top: 0; left: 0;
       background: #FFF8E1; padding: 24px 16px 0;
       display: flex; align-items: center;
@@ -31,7 +60,7 @@
 
     /* ====== 导航栏（4 项） ====== */
     .nav-bar {
-      height: 80px; width: 375px;
+      height: 80px; width: 100%;
       position: absolute; bottom: 0; left: 0;
       background: #FFF3D6;
       border-top: 1px solid #E8D7B0;
@@ -201,13 +230,15 @@
     .profile-sub { font-size: 12px; opacity: .85; margin-top: 4px; }
 
     .reward-edit-row {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 8px;
       margin: 6px 16px; padding: 10px 12px; background: #FFEFC2; border-radius: 10px;
+      max-width: calc(100% - 32px);
     }
-    .reward-edit-emoji { font-size: 28px; width: 40px; text-align: center; }
-    .reward-edit-label { flex: 1; font-size: 13px; color: #6B5430; }
+    .reward-edit-emoji { font-size: 28px; width: 40px; text-align: center; flex-shrink: 0; }
+    .reward-edit-label { flex: 1; font-size: 13px; color: #6B5430; min-width: 0; }
     .reward-edit-input {
-      flex: 1; padding: 6px 10px; border: 1px solid #E8D7B0;
+      flex: 1; min-width: 0;
+      padding: 6px 10px; border: 1px solid #E8D7B0;
       border-radius: 6px; background: #fff; font-size: 13px; color: #6B5430; outline: none;
     }
     .reward-edit-input:focus { border-color: #FF8A65; }
@@ -702,15 +733,17 @@ function renderBoxRewards() {
 
 function shuffleRewards() {
   const items = document.querySelectorAll('#page-box .reward-item');
-  const padTop = 70, padSide = 12, padBottom = 16;
-  const areaH = 812 - 64 - 80;
+  const area = document.querySelector('.box-area');
+  const areaW = area ? area.clientWidth : 375;
+  const areaH = (area ? area.clientHeight : 668);
   const itemW = 76, itemH = 76 + 18;
+  const padTop = 70, padSide = 12, padBottom = 16;
   const placed = [];
 
   items.forEach(item => {
     let x, y, tries = 0;
     do {
-      x = padSide + Math.random() * (375 - itemW - padSide*2);
+      x = padSide + Math.random() * (areaW - itemW - padSide*2);
       y = padTop + Math.random() * (areaH - itemH - padTop - padBottom);
       tries++;
     } while (tries < 60 && placed.some(r =>

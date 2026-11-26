@@ -1,0 +1,24 @@
+{
+  "name": "SportSpinner · 运动打卡",
+  "short_name": "SportSpinner",
+  "description": "转盘选运动 + 每日打卡 + 惊喜奖励，运动从此有记录",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8E1",
+  "theme_color": "#FFF8E1",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM2IiBmaWxsPSIjRkZGMEUxIi8+PGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iNTYiIGZpbGw9IiNmZjhhNjUiLz48dGV4dCB4PSI5NiIgeT0iMTE0IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+77mXPC90ZXh0Pjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjRkZGMEUxIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNTUiIGZpbGw9IiNmZjhhNjUiLz48dGV4dCB4PSIyNTYiIHk9IjMwNiIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7vuFwvdGV4dD48L3N2Zz4=",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
