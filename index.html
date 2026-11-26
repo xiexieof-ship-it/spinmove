@@ -42,17 +42,21 @@
         box-shadow: 0 20px 60px rgba(0,0,0,.3);
       }
     }
-    .page { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+    .page {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column;
+    }
     .hidden { display: none !important; }
     .body {
-      position: absolute; top: 64px; bottom: 80px; left: 0; right: 0;
+      flex: 1; position: relative;
       overflow-y: auto; background: #FFF8E1;
+      -webkit-overflow-scrolling: touch;
     }
-    .body-full { bottom: 0; }
+    .body-full { overflow-y: auto; }
 
     .app-bar {
       height: 64px; width: 100%;
-      position: absolute; top: 0; left: 0;
+      position: relative; flex-shrink: 0;
       background: #FFF8E1; padding: 24px 16px 0;
       display: flex; align-items: center;
     }
@@ -61,7 +65,7 @@
     /* ====== 导航栏（4 项） ====== */
     .nav-bar {
       height: 80px; width: 100%;
-      position: absolute; bottom: 0; left: 0;
+      position: relative; flex-shrink: 0;
       background: #FFF3D6;
       border-top: 1px solid #E8D7B0;
       display: flex;
@@ -84,8 +88,42 @@
     }
     .bottom-pad { height: 24px; }
 
-    /* ============== 转盘 ============== */
-    .wheel-wrap { position: relative; margin: 16px auto 8px; width: 280px; height: 280px; }
+    /* ============== 首页：一屏固定 ============== */
+    #page-home .body {
+      display: flex; flex-direction: column;
+      overflow: hidden;  /* 首页不滚动，全部塞一屏 */
+      padding-bottom: 4px;
+    }
+    #page-home .section-title { flex-shrink: 0; margin: 6px 16px 2px; font-size: 11px; }
+    #page-home .counter-box { flex-shrink: 0; margin: 6px 16px; padding: 8px 12px; }
+    #page-home #home-history { flex-shrink: 0; margin: 0 16px; max-height: 60px; overflow: hidden; font-size: 12px; }
+    #page-home .bottom-pad { display: none; }
+
+    /* 转盘：自适应大小（最大 280px，小屏自动缩小） */
+    .wheel-wrap {
+      position: relative; margin: 4px auto;
+      width: 280px; height: 280px;
+      /* 小屏自动缩小 */
+      max-width: min(280px, calc(100vw - 32px));
+      max-height: min(280px, calc(100vw - 32px));
+      flex: 1 1 auto;
+      min-height: 160px;
+    }
+    .wheel {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        #FF8A65 0deg 72deg, #64B5F6 72deg 144deg,
+        #81C784 144deg 216deg, #F06292 216deg 288deg,
+        #FFD54F 288deg 360deg
+      );
+      border: 7px solid #fff;
+      box-shadow: 0 6px 20px rgba(0,0,0,.18), inset 0 0 0 2px rgba(0,0,0,.08);
+      position: relative; cursor: pointer;
+      transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.3, 1);
+      transform: rotate(0deg);
+      transform-origin: center center;
+    }
     .wheel-pointer {
       position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
       width: 0; height: 0;
@@ -99,25 +137,13 @@
       background: #C0392B; border: 4px solid #fff;
       box-shadow: 0 2px 5px rgba(0,0,0,.35);
     }
-    .wheel {
-      width: 280px; height: 280px; border-radius: 50%;
-      background: conic-gradient(
-        #FF8A65 0deg 72deg, #64B5F6 72deg 144deg,
-        #81C784 144deg 216deg, #F06292 216deg 288deg,
-        #FFD54F 288deg 360deg
-      );
-      border: 7px solid #fff;
-      box-shadow: 0 6px 20px rgba(0,0,0,.18), inset 0 0 0 2px rgba(0,0,0,.08);
-      position: relative; cursor: pointer;
-      transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.3, 1);
-      transform: rotate(0deg); transform-origin: center center;
-    }
     .wheel.spinning { pointer-events: none; }
     .wheel.done { box-shadow: 0 0 0 5px #FFD700, 0 6px 20px rgba(0,0,0,.25), inset 0 0 0 2px rgba(0,0,0,.08); }
     .wheel-label {
       position: absolute; left: 50%; top: 50%; width: 72px; text-align: center;
       transform-origin: 0 0; font-size: 13px; font-weight: 600; color: #fff;
       text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none;
+      /* JS 会设置 --label-offset 为 wheel 半径 * 0.75 */
     }
     .wheel-label.selected-label { color: #C0392B; text-shadow: 0 0 12px #FFD700, 0 1px 2px rgba(0,0,0,.3); font-weight: 700; font-size: 15px; }
     .wheel-center {
@@ -269,11 +295,11 @@
       <div class="wheel-wrap">
         <div class="wheel-pointer"></div>
         <div id="wheel" class="wheel" onclick="onWheelTap()">
-          <div class="wheel-label" data-index="0" style="transform: rotate(36deg)  translate(0, -105px);">🏃<br>跑步</div>
-          <div class="wheel-label" data-index="1" style="transform: rotate(108deg) translate(0, -105px);">🏸<br>羽毛球</div>
-          <div class="wheel-label" data-index="2" style="transform: rotate(180deg) translate(0, -105px);">🏓<br>乒乓球</div>
-          <div class="wheel-label" data-index="3" style="transform: rotate(252deg) translate(0, -105px);">💃<br>跳舞</div>
-          <div class="wheel-label" data-index="4" style="transform: rotate(324deg) translate(0, -105px);">🏊<br>游泳</div>
+          <div class="wheel-label" data-index="0">🏃<br>跑步</div>
+          <div class="wheel-label" data-index="1">🏸<br>羽毛球</div>
+          <div class="wheel-label" data-index="2">🏓<br>乒乓球</div>
+          <div class="wheel-label" data-index="3">💃<br>跳舞</div>
+          <div class="wheel-label" data-index="4">🏊<br>游泳</div>
           <div class="wheel-center">🎯</div>
         </div>
       </div>
@@ -546,9 +572,16 @@ document.addEventListener('DOMContentLoaded', () => {
   snack   = localStorage.getItem(K.SNACK);
 
   renderWheelLabels();
+  updateWheelSize();
   updateCounter();
   renderHomeHistory();
   renderCheckin();
+
+  window.addEventListener('resize', () => {
+    updateWheelSize();
+    if (document.getElementById('page-box') && !document.getElementById('page-box').classList.contains('hidden')) shuffleRewards();
+  });
+  window.addEventListener('orientationchange', () => setTimeout(updateWheelSize, 100));
   renderRewardsEdit();
   // 首页日期
   const d = new Date();
@@ -625,6 +658,24 @@ function resetWheel() {
   w.classList.remove('done');
   document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
   currentSelected = -1;
+}
+
+// 根据实际 wheel-wrap 尺寸计算 label 的 translate 偏移
+function updateWheelSize() {
+  const ww = document.querySelector('.wheel-wrap');
+  if (!ww) return;
+  const size = ww.clientWidth;
+  const radius = size / 2;
+  const labelOffset = Math.round(radius * 0.72);  // label 放在半径 72% 处
+  ww.style.setProperty('--label-offset', labelOffset + 'px');
+
+  // 更新每个 label 的 transform：rotate + translate
+  const degStep = 360 / sports.length;
+  document.querySelectorAll('.wheel-label').forEach(el => {
+    const i = parseInt(el.dataset.index);
+    const deg = (i * degStep) + (degStep / 2);
+    el.style.transform = `rotate(${deg}deg) translate(0, -${labelOffset}px)`;
+  });
 }
 
 // 把转盘 label 的 emoji/name 从 sports 数据渲染出来
