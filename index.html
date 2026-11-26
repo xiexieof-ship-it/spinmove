@@ -603,8 +603,8 @@ function toggleMeal(meal) {
   renderCheckin();
 }
 function setSnack(val) {
-  snack = val;
-  localStorage.setItem(K.SNACK, val ? '1' : '0');
+  snack = val ? '1' : '0';
+  localStorage.setItem(K.SNACK, snack);
   renderCheckin();
 }
 
