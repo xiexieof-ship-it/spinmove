@@ -413,6 +413,14 @@
         </div>
       </div>
 
+      <!-- 运动项目编辑 -->
+      <div class="section-title">🏃 修改运动项目</div>
+      <div class="card">
+        <div style="font-size:12px;color:#A88960;margin-bottom:8px;">emoji 和文字都可以改，转盘会实时显示新内容。</div>
+      </div>
+      <div id="sports-edit-list"></div>
+      <button class="reward-edit-save" onclick="saveSports()">保存运动项目</button>
+
       <!-- 奖励编辑 -->
       <div class="section-title">✏️ 修改惊喜盒子内容</div>
       <div class="card">
@@ -439,16 +447,24 @@
    STORAGE  —— shared_preferences 对应 localStorage
    ============================================= */
 const K = {
-  COUNT:   'sm_count',
-  HISTORY: 'sm_history',
-  REWARDS: 'sm_rewards',
+  COUNT:    'sm_count',
+  HISTORY:  'sm_history',
+  REWARDS:  'sm_rewards',
+  SPORTS:   'sm_sports',    // 5 项运动（emoji + name）
   // 打卡数据（用日期做 key，支持多日累计）
-  WATER:   'sm_water_' + todayKey(),   // [0,1,1,0] 4杯
-  MEALS:   'sm_meals_' + todayKey(),   // {breakfast,lunch,dinner}
-  SNACK:   'sm_snack_' + todayKey()    // 1=健康, 0=破戒, null=未填
+  WATER:   'sm_water_' + todayKey(),
+  MEALS:   'sm_meals_' + todayKey(),
+  SNACK:   'sm_snack_' + todayKey()
 };
 
 const DEFAULTS = {
+  SPORTS: [
+    { emoji: '🏃', name: '跑步' },
+    { emoji: '🏸', name: '羽毛球' },
+    { emoji: '🏓', name: '乒乓球' },
+    { emoji: '💃', name: '跳舞' },
+    { emoji: '🏊', name: '游泳' }
+  ],
   REWARDS: [
     { emoji: '❤️', label: '爱心' },
     { emoji: '⭐', label: '星星' },
@@ -474,34 +490,31 @@ function spGetList(key, d=[]) { try { const v = localStorage.getItem(key); retur
 /* =============================================
    业务数据
    ============================================= */
-const SPORTS = [
-  { emoji: '🏃', name: '跑步' },
-  { emoji: '🏸', name: '羽毛球' },
-  { emoji: '🏓', name: '乒乓球' },
-  { emoji: '💃', name: '跳舞' },
-  { emoji: '🏊', name: '游泳' }
-];
+// SPORTS 现在是可变变量（可在"我的"页编辑）
+let sports = [];   // [{ emoji, name }] — 5 项运动
 
 let isSpinning = false;
 let currentSelected = -1;
 let count = 0;
 let history = [];
 let rewards = [];
-let water = [];     // [0,1,0,1]
-let meals = {};     // {breakfast:false, lunch:true, dinner:false}
-let snack = null;   // 1=健康, 0=破戒, null=未填
+let water = [];
+let meals = {};
+let snack = null;
 
 /* =============================================
    init（对应 Flutter initState）
    ============================================= */
 document.addEventListener('DOMContentLoaded', () => {
+  sports  = spGetList(K.SPORTS, DEFAULTS.SPORTS);
   count   = spGetInt(K.COUNT, 0);
   history = spGetList(K.HISTORY, []);
   rewards = spGetList(K.REWARDS, DEFAULTS.REWARDS);
   water   = spGetList(K.WATER, DEFAULTS.WATER);
   meals   = spGetList(K.MEALS, DEFAULTS.MEALS);
-  snack   = localStorage.getItem(K.SNACK); // null | "1" | "0"
+  snack   = localStorage.getItem(K.SNACK);
 
+  renderWheelLabels();
   updateCounter();
   renderHomeHistory();
   renderCheckin();
@@ -526,7 +539,7 @@ function show(target) {
 
   if (target === 'page-box') { setTimeout(() => { renderBoxRewards(); shuffleRewards(); }, 30); }
   if (target === 'page-checkin') { renderCheckin(); }
-  if (target === 'page-me') { renderMePage(); renderRewardsEdit(); }
+  if (target === 'page-me') { renderMePage(); renderSportsEdit(); renderRewardsEdit(); }
 }
 
 /* =============================================
@@ -549,7 +562,7 @@ function onWheelTap() {
     document.querySelectorAll('.wheel-label').forEach(el => {
       if (parseInt(el.dataset.index) === currentSelected) el.classList.add('selected-label');
     });
-    const s = SPORTS[currentSelected];
+    const s = sports[currentSelected];
     document.getElementById('selected-sport').textContent = `${s.emoji} ${s.name}`;
     document.getElementById('dialog-yesno').classList.remove('hidden');
   }, 4600);
@@ -559,7 +572,7 @@ function onNo() { document.getElementById('dialog-yesno').classList.add('hidden'
 function onYes() {
   document.getElementById('dialog-yesno').classList.add('hidden');
   resetWheel();
-  const sport = SPORTS[currentSelected];
+  const sport = sports[currentSelected];
   const now = new Date();
   const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2,'0');
   const ap = hh < 12 ? '上午' : '下午';
@@ -581,6 +594,15 @@ function resetWheel() {
   w.classList.remove('done');
   document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
   currentSelected = -1;
+}
+
+// 把转盘 label 的 emoji/name 从 sports 数据渲染出来
+function renderWheelLabels() {
+  document.querySelectorAll('.wheel-label').forEach(el => {
+    const i = parseInt(el.dataset.index);
+    const s = sports[i];
+    if (s) el.innerHTML = `${s.emoji}<br>${s.name}`;
+  });
 }
 
 function updateCounter() {
@@ -748,6 +770,37 @@ function saveRewards() {
 
   // Toast 提示
   const btn = document.querySelector('.reward-edit-save');
+  const orig = btn.textContent;
+  btn.textContent = '✅ 已保存';
+  btn.style.background = '#4CAF50';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = '#FF8A65'; }, 1500);
+}
+
+/* =============================================
+   运动项目编辑（和奖励编辑一套逻辑）
+   ============================================= */
+function renderSportsEdit() {
+  const list = document.getElementById('sports-edit-list');
+  list.innerHTML = sports.map((s, i) =>
+    `<div class="reward-edit-row">
+       <input class="reward-edit-input" id="sports-emoji-${i}" value="${s.emoji}" placeholder="emoji">
+       <input class="reward-edit-input" id="sports-name-${i}" value="${s.name}" placeholder="运动名称" style="flex:2;">
+     </div>`
+  ).join('');
+}
+
+function saveSports() {
+  sports.forEach((s, i) => {
+    const eInput = document.getElementById('sports-emoji-' + i);
+    const nInput = document.getElementById('sports-name-' + i);
+    if (eInput && eInput.value.trim()) s.emoji = eInput.value.trim();
+    if (nInput && nInput.value.trim()) s.name = nInput.value.trim();
+  });
+  spSetList(K.SPORTS, sports);
+  renderWheelLabels();  // 转盘立即刷新
+
+  // Toast
+  const btn = document.querySelector('#sports-edit-list').nextElementSibling;
   const orig = btn.textContent;
   btn.textContent = '✅ 已保存';
   btn.style.background = '#4CAF50';
