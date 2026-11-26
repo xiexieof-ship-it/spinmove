@@ -8,34 +8,28 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 375px; background: #eee; font-family: -apple-system, Roboto, system-ui, sans-serif; }
 
-    /* ====== 淡黄色背景 ====== */
     .phone-frame {
-      width: 375px;
-      height: 812px;
+      width: 375px; height: 812px;
       background: #FFF8E1;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
+      margin: 0 auto; position: relative; overflow: hidden;
     }
+    .page { width: 375px; height: 812px; position: absolute; top: 0; left: 0; }
+    .hidden { display: none !important; }
     .body {
-      position: absolute;
-      top: 64px;
-      bottom: 80px;
-      left: 0;
-      right: 0;
-      overflow-y: auto;
-      background: #FFF8E1;
+      position: absolute; top: 64px; bottom: 80px; left: 0; right: 0;
+      overflow-y: auto; background: #FFF8E1;
     }
     .body-full { bottom: 0; }
 
-    /* AppBar / NavBar */
     .app-bar {
       height: 64px; width: 375px;
       position: absolute; top: 0; left: 0;
-      background: #FFF8E1;
-      padding-top: 24px;
+      background: #FFF8E1; padding: 24px 16px 0;
       display: flex; align-items: center;
     }
+    .app-bar-title { font-size: 22px; font-weight: 600; color: #8B6F47; }
+
+    /* ====== 导航栏（4 项） ====== */
     .nav-bar {
       height: 80px; width: 375px;
       position: absolute; bottom: 0; left: 0;
@@ -43,309 +37,202 @@
       border-top: 1px solid #E8D7B0;
       display: flex;
     }
-
-    .page { width: 375px; height: 812px; position: absolute; top: 0; left: 0; }
-    .hidden { display: none !important; }
-
-    .section-title { font-size: 13px; color: #8B6F47; margin: 12px 16px 6px; font-weight: 600; }
-    .block { margin: 4px 8px; padding: 6px 10px; background: #FFEFC2; border-radius: 8px; font-size: 12px; color: #6B5430; }
-
-    /* ====== 转盘（静态起始，点击后 JS 触发旋转） ====== */
-    .wheel-wrap {
-      position: relative;
-      margin: 16px auto 8px;
-      width: 280px;
-      height: 280px;
-    }
-
-    /* 固定指针（12 点方向） */
-    .wheel-pointer {
-      position: absolute;
-      top: -4px; left: 50%;
-      transform: translateX(-50%);
-      width: 0; height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 30px solid #C0392B;
-      z-index: 5;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,.35));
-    }
-    .wheel-pointer::after {
-      content: "";
-      position: absolute;
-      top: -42px; left: 50%;
-      transform: translateX(-50%);
-      width: 16px; height: 16px;
-      border-radius: 50%;
-      background: #C0392B;
-      border: 4px solid #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,.35);
-    }
-
-    /* 转盘本体（静态 → 点击后 JS 加 transition transform） */
-    .wheel {
-      width: 280px; height: 280px;
-      border-radius: 50%;
-      /* 5 个扇形 conic-gradient，颜色鲜明 */
-      background: conic-gradient(
-        #FF8A65 0deg 72deg,
-        #64B5F6 72deg 144deg,
-        #81C784 144deg 216deg,
-        #F06292 216deg 288deg,
-        #FFD54F 288deg 360deg
-      );
-      border: 7px solid #fff;
-      box-shadow:
-        0 6px 20px rgba(0,0,0,.18),
-        inset 0 0 0 2px rgba(0,0,0,.08);
-      position: relative;
-      cursor: pointer;
-      /* 旋转动画：4.5s 减速，没有无限循环 */
-      transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.3, 1);
-      transform: rotate(0deg);
-      transform-origin: center center;
-    }
-
-    /* 转盘旋转中：不可点击 */
-    .wheel.spinning { pointer-events: none; }
-
-    /* 转盘停下后外圈高亮 */
-    .wheel.done {
-      box-shadow:
-        0 0 0 5px #FFD700,
-        0 6px 20px rgba(0,0,0,.25),
-        inset 0 0 0 2px rgba(0,0,0,.08);
-    }
-
-    /* 5 个扇形文字（初始静态跟随转盘，转盘转的时候一起转） */
-    .wheel-label {
-      position: absolute;
-      left: 50%; top: 50%;
-      width: 72px;
-      text-align: center;
-      transform-origin: 0 0;
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,.35);
-      pointer-events: none;
-    }
-
-    /* 选中扇形的 label 高亮（停下后变红色加粗） */
-    .wheel-label.selected-label {
-      color: #C0392B;
-      text-shadow: 0 0 12px #FFD700, 0 1px 2px rgba(0,0,0,.3);
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    /* 转盘中心装饰圆 */
-    .wheel-center {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 58px; height: 58px;
-      background: #fff;
-      border-radius: 50%;
-      border: 4px solid #8B6F47;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-      display: flex;
-      align-items: center; justify-content: center;
-      font-size: 24px;
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    /* 计数区 */
-    .counter-box {
-      margin: 8px 16px;
-      padding: 14px;
-      background: #FFEFC2;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .counter-num {
-      font-size: 32px; font-weight: 700; color: #8B6F47; min-width: 50px;
-    }
-    .counter-bar-wrap { flex: 1; }
-    .counter-bar {
-      height: 10px; border-radius: 5px;
-      background: #E8D7B0; overflow: hidden;
-    }
-    .counter-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #FFB74D, #FF8A65);
-      border-radius: 5px;
-      transition: width .4s;
-    }
-    .counter-label { font-size: 11px; color: #8B6F47; margin-top: 4px; }
-
-    /* 今日记录 */
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      font-size: 14px;
-      color: #6B5430;
-    }
-    .history-time { font-size: 12px; color: #A88960; margin-left: auto; }
-
-    /* NavigationBar item */
     .nav-item {
       flex: 1; display: flex;
       flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 4px;
-      font-size: 11px;
-      color: #A88960;
-      cursor: pointer;
+      gap: 4px; font-size: 11px;
+      color: #A88960; cursor: pointer;
     }
-    .nav-item.selected { color: #8B6F47; font-weight: 600; }
-    .nav-icon { font-size: 22px; }
+    .nav-item.selected { color: #C0392B; font-weight: 600; }
+    .nav-icon { font-size: 24px; }
 
-    /* Dialog 叠加层 */
+    .section-title { font-size: 13px; color: #8B6F47; margin: 16px 16px 6px; font-weight: 600; }
+    .section-title:first-child { margin-top: 16px; }
+    .card {
+      margin: 8px 16px; padding: 14px;
+      background: #FFEFC2; border-radius: 12px;
+    }
+    .bottom-pad { height: 24px; }
+
+    /* ============== 转盘 ============== */
+    .wheel-wrap { position: relative; margin: 16px auto 8px; width: 280px; height: 280px; }
+    .wheel-pointer {
+      position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 15px solid transparent; border-right: 15px solid transparent;
+      border-top: 30px solid #C0392B;
+      z-index: 5; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35));
+    }
+    .wheel-pointer::after {
+      content: ""; position: absolute; top: -42px; left: 50%; transform: translateX(-50%);
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #C0392B; border: 4px solid #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,.35);
+    }
+    .wheel {
+      width: 280px; height: 280px; border-radius: 50%;
+      background: conic-gradient(
+        #FF8A65 0deg 72deg, #64B5F6 72deg 144deg,
+        #81C784 144deg 216deg, #F06292 216deg 288deg,
+        #FFD54F 288deg 360deg
+      );
+      border: 7px solid #fff;
+      box-shadow: 0 6px 20px rgba(0,0,0,.18), inset 0 0 0 2px rgba(0,0,0,.08);
+      position: relative; cursor: pointer;
+      transition: transform 4.5s cubic-bezier(0.17, 0.67, 0.3, 1);
+      transform: rotate(0deg); transform-origin: center center;
+    }
+    .wheel.spinning { pointer-events: none; }
+    .wheel.done { box-shadow: 0 0 0 5px #FFD700, 0 6px 20px rgba(0,0,0,.25), inset 0 0 0 2px rgba(0,0,0,.08); }
+    .wheel-label {
+      position: absolute; left: 50%; top: 50%; width: 72px; text-align: center;
+      transform-origin: 0 0; font-size: 13px; font-weight: 600; color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none;
+    }
+    .wheel-label.selected-label { color: #C0392B; text-shadow: 0 0 12px #FFD700, 0 1px 2px rgba(0,0,0,.3); font-weight: 700; font-size: 15px; }
+    .wheel-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 58px; height: 58px; background: #fff; border-radius: 50%;
+      border: 4px solid #8B6F47; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; z-index: 3; pointer-events: none;
+    }
+
+    /* 计数 */
+    .counter-box {
+      margin: 8px 16px; padding: 14px; background: #FFEFC2; border-radius: 10px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .counter-num { font-size: 32px; font-weight: 700; color: #8B6F47; min-width: 50px; }
+    .counter-bar-wrap { flex: 1; }
+    .counter-bar { height: 10px; border-radius: 5px; background: #E8D7B0; overflow: hidden; }
+    .counter-bar-fill { height: 100%; background: linear-gradient(90deg, #FFB74D, #FF8A65); border-radius: 5px; transition: width .4s; }
+    .counter-label { font-size: 11px; color: #8B6F47; margin-top: 4px; }
+
+    .history-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; font-size: 14px; color: #6B5430;
+    }
+    .history-time { font-size: 12px; color: #A88960; margin-left: auto; }
+
+    /* ============== Dialog ============== */
     .dialog-backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,.45);
-      display: flex;
-      align-items: center; justify-content: center;
-      z-index: 100;
+      position: absolute; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
     }
-    .dialog-card {
-      width: 290px;
-      background: #fff;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.3);
-    }
+    .dialog-card { width: 290px; background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
     .dialog-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 14px; }
-    .dialog-sport {
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      color: #C0392B;
-      padding: 18px 12px;
-      background: #FFF3EE;
-      border-radius: 10px;
-      margin-bottom: 18px;
-    }
+    .dialog-sport { text-align: center; font-size: 22px; font-weight: 700; color: #C0392B; padding: 18px 12px; background: #FFF3EE; border-radius: 10px; margin-bottom: 18px; }
     .dialog-btns { display: flex; gap: 12px; }
-    .btn-no {
-      flex: 1; padding: 12px; border: 1.5px solid #CCC;
-      background: #fff; border-radius: 10px;
-      font-size: 14px; color: #666; cursor: pointer;
+    .btn-no { flex: 1; padding: 12px; border: 1.5px solid #CCC; background: #fff; border-radius: 10px; font-size: 14px; color: #666; cursor: pointer; }
+    .btn-yes { flex: 1; padding: 12px; border: none; background: #FF8A65; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    /* ============== 打卡页 ============== */
+    .cup-row { display: flex; justify-content: space-around; padding: 8px 0; }
+    .cup-item { text-align: center; cursor: pointer; user-select: none; }
+    .cup-icon { font-size: 48px; transition: transform .15s; }
+    .cup-item:active .cup-icon { transform: scale(0.9); }
+    .cup-label { font-size: 11px; color: #8B6F47; margin-top: 4px; }
+
+    .plate-row { display: flex; justify-content: space-around; padding: 8px 0; }
+    .plate-item { text-align: center; cursor: pointer; user-select: none; }
+    .plate-icon { font-size: 44px; opacity: .3; filter: grayscale(100%); transition: all .2s; }
+    .plate-item.done .plate-icon { opacity: 1; filter: none; }
+    .plate-label { font-size: 11px; color: #8B6F47; margin-top: 4px; }
+
+    .snack-row { display: flex; justify-content: center; gap: 30px; padding: 10px 0; }
+    .snack-btn {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 3px solid #E8D7B0; background: #fff;
+      font-size: 40px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
     }
-    .btn-yes {
-      flex: 1; padding: 12px; border: none;
-      background: #FF8A65; color: #fff;
-      border-radius: 10px;
+    .snack-btn.yes { border-color: #4CAF50; background: #E8F5E9; }
+    .snack-btn.no  { border-color: #F44336; background: #FFEBEE; }
+    .snack-hint { text-align: center; font-size: 12px; color: #A88960; margin-top: 8px; }
+
+    .checkin-summary {
+      margin: 8px 16px; padding: 14px; background: linear-gradient(135deg, #FFEFC2, #FFD8A8);
+      border-radius: 12px; font-size: 13px; color: #8B6F47;
+    }
+    .checkin-score { font-size: 28px; font-weight: 700; color: #C0392B; }
+
+    /* ============== 惊喜盒子 ============== */
+    .box-area {
+      position: absolute; top: 64px; bottom: 80px; left: 0; right: 0;
+      overflow: hidden; background: #FFF8E1;
+    }
+    .box-title { position: absolute; top: 16px; left: 0; right: 0; text-align: center; color: #8B6F47; font-size: 15px; font-weight: 600; padding: 0 16px; }
+    .reward-item {
+      position: absolute; font-size: 54px; width: 76px; height: 76px;
+      display: flex; align-items: center; justify-content: center;
+      background: #FFEFC2; border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      cursor: pointer; transition: transform .2s; user-select: none;
+    }
+    .reward-item:active { transform: scale(0.92); }
+    .reward-item-label { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 11px; color: #8B6F47; }
+
+    .wow-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; animation: fadeIn .3s ease-out;
+    }
+    .wow-text {
+      font-size: 64px; font-weight: 800; color: #FFD700;
+      text-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 30px rgba(255,215,0,.6);
+      animation: popIn .5s cubic-bezier(.2,1.4,.5,1); pointer-events: none;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { 0% { transform: scale(.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* ============== 我的页 ============== */
+    .profile-header {
+      margin: 16px; padding: 20px; background: linear-gradient(135deg, #FFD54F, #FF8A65);
+      border-radius: 16px; color: #fff;
+    }
+    .profile-avatar { font-size: 48px; }
+    .profile-name { font-size: 20px; font-weight: 700; margin-top: 6px; }
+    .profile-sub { font-size: 12px; opacity: .85; margin-top: 4px; }
+
+    .reward-edit-row {
+      display: flex; align-items: center; gap: 10px;
+      margin: 6px 16px; padding: 10px 12px; background: #FFEFC2; border-radius: 10px;
+    }
+    .reward-edit-emoji { font-size: 28px; width: 40px; text-align: center; }
+    .reward-edit-label { flex: 1; font-size: 13px; color: #6B5430; }
+    .reward-edit-input {
+      flex: 1; padding: 6px 10px; border: 1px solid #E8D7B0;
+      border-radius: 6px; background: #fff; font-size: 13px; color: #6B5430; outline: none;
+    }
+    .reward-edit-input:focus { border-color: #FF8A65; }
+    .reward-edit-save {
+      margin: 10px 16px; padding: 10px; width: calc(100% - 32px);
+      border: none; background: #FF8A65; color: #fff; border-radius: 10px;
       font-size: 14px; font-weight: 600; cursor: pointer;
     }
 
-    /* 惊喜盒子 —— 随机分布 5 个奖励 */
-    .box-area {
-      position: absolute;
-      top: 64px;
-      bottom: 80px;
-      left: 0; right: 0;
-      overflow: hidden;
-      background: #FFF8E1;
-    }
-    .box-title {
-      position: absolute;
-      top: 16px; left: 0; right: 0;
-      text-align: center;
-      color: #8B6F47;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 0 16px;
-    }
-    .reward-item {
-      position: absolute;
-      font-size: 54px;
-      width: 76px; height: 76px;
-      display: flex; align-items: center; justify-content: center;
-      background: #FFEFC2;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15);
-      cursor: pointer;
-      transition: transform .2s;
-      user-select: none;
-    }
-    .reward-item:active { transform: scale(0.92); }
-    .reward-item-label {
-      position: absolute;
-      bottom: -18px; left: 0; right: 0;
-      text-align: center;
-      font-size: 11px;
-      color: #8B6F47;
-    }
-
-    /* "太棒了" 全屏提示 */
-    .wow-overlay {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,.55);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200;
-      animation: fadeIn .3s ease-out;
-    }
-    .wow-text {
-      font-size: 64px;
-      font-weight: 800;
-      color: #FFD700;
-      text-shadow: 0 4px 16px rgba(0,0,0,.5), 0 0 30px rgba(255,215,0,.6);
-      animation: popIn .5s cubic-bezier(.2,1.4,.5,1);
-      pointer-events: none;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes popIn {
-      0% { transform: scale(.3); opacity: 0; }
-      60% { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* 奖励设置 */
-    .setting-row {
-      margin: 8px 16px;
-      padding: 12px 14px;
-      background: #FFEFC2;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .setting-icon { font-size: 26px; }
-    .setting-label { flex: 1; font-size: 14px; color: #6B5430; }
-
-    .bottom-pad { height: 32px; }
+    .empty-state { text-align: center; color: #A88960; font-size: 13px; padding: 24px 16px; }
   </style>
 </head>
 <body>
 
 <div class="phone-frame">
 
-  <!-- ============================================================ -->
-  <!-- 页面 1：首页 · 扇形选择（静态 → 点击旋转 → 停下高亮 → Dialog） -->
-  <!-- ============================================================ -->
+  <!-- ========================================================= -->
+  <!-- 页面 1：首页（转盘）                                         -->
+  <!-- ========================================================= -->
   <div id="page-home" class="page">
-
-    <div class="app-bar" style="padding-left:16px;">
-      <span style="font-size:22px;font-weight:600;color:#8B6F47;">🏃 运动记录</span>
-    </div>
-
+    <div class="app-bar"><span class="app-bar-title">🏃 运动记录</span></div>
     <div class="body">
       <div class="section-title">点击转盘选一项运动</div>
 
-      <!-- ===== 转盘区域 ===== -->
       <div class="wheel-wrap">
         <div class="wheel-pointer"></div>
-        <!-- 初始静态，点击后触发 JS 旋转动画 -->
         <div id="wheel" class="wheel" onclick="onWheelTap()">
-          <!-- 5 个扇形 label，各自初始 rotate 定位 -->
-          <div class="wheel-label" data-index="0" style="transform: rotate(36deg) translate(0, -105px);">🏃<br>跑步</div>
+          <div class="wheel-label" data-index="0" style="transform: rotate(36deg)  translate(0, -105px);">🏃<br>跑步</div>
           <div class="wheel-label" data-index="1" style="transform: rotate(108deg) translate(0, -105px);">🏸<br>羽毛球</div>
           <div class="wheel-label" data-index="2" style="transform: rotate(180deg) translate(0, -105px);">🏓<br>乒乓球</div>
           <div class="wheel-label" data-index="3" style="transform: rotate(252deg) translate(0, -105px);">💃<br>跳舞</div>
@@ -354,7 +241,6 @@
         </div>
       </div>
 
-      <!-- ===== 计数区 ===== -->
       <div class="counter-box">
         <div class="counter-num" id="counter-num">0</div>
         <div class="counter-bar-wrap">
@@ -363,26 +249,22 @@
         </div>
       </div>
 
-      <!-- ===== 今日记录 ===== -->
       <div class="section-title">今日记录</div>
-      <div id="history-list">
-        <div class="history-item">🏃 跑步 <span class="history-time">上午 09:30</span></div>
-        <div class="history-item">🏸 羽毛球 <span class="history-time">下午 14:00</span></div>
-      </div>
+      <div id="home-history"><div class="empty-state">今天还没记录哦～点上面转盘开始吧 ✨</div></div>
       <div class="bottom-pad"></div>
     </div>
 
     <div class="nav-bar">
-      <div class="nav-item selected" onclick="show('page-home')"><span class="nav-icon">🏠</span>首页</div>
-      <div class="nav-item" onclick="show('page-reward')"><span class="nav-icon">🎁</span>奖励</div>
-      <div class="nav-item" onclick="show('page-box')"><span class="nav-icon">🏆</span>盒子</div>
+      <div class="nav-item selected"><span class="nav-icon">🏠</span>首页</div>
+      <div class="nav-item" onclick="show('page-checkin')"><span class="nav-icon">✅</span>打卡</div>
+      <div class="nav-item" onclick="show('page-box')"><span class="nav-icon">🎁</span>盒子</div>
+      <div class="nav-item" onclick="show('page-me')"><span class="nav-icon">👤</span>我的</div>
     </div>
   </div>
 
-
-  <!-- ============================================================ -->
-  <!-- Dialog：Yes / No                                              -->
-  <!-- ============================================================ -->
+  <!-- ========================================================= -->
+  <!-- Dialog -->
+  <!-- ========================================================= -->
   <div id="dialog-yesno" class="dialog-backdrop hidden">
     <div class="dialog-card">
       <div class="dialog-title">确认记录一次？</div>
@@ -394,311 +276,460 @@
     </div>
   </div>
 
+  <!-- ========================================================= -->
+  <!-- 页面 2：打卡（喝水 + 饮食 + 零食）                             -->
+  <!-- ========================================================= -->
+  <div id="page-checkin" class="page hidden">
+    <div class="app-bar"><span class="app-bar-title">✅ 每日打卡</span></div>
+    <div class="body">
+      <!-- 今日概览 -->
+      <div class="checkin-summary" id="checkin-summary">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:32px;">🌟</span>
+          <div>
+            <div>今日完成度</div>
+            <div class="checkin-score"><span id="checkin-count">0</span>/8</div>
+          </div>
+        </div>
+        <div style="font-size:12px;opacity:.85;margin-top:6px;" id="checkin-date"></div>
+      </div>
 
-  <!-- ============================================================ -->
-  <!-- 页面 2：惊喜盒子（5 个奖励随机分布）                             -->
-  <!-- ============================================================ -->
-  <div id="page-box" class="page hidden">
-    <div class="app-bar" style="padding-left:16px;">
-      <span style="font-size:22px;font-weight:600;color:#8B6F47;">🎁 惊喜盒子</span>
+      <!-- 喝水打卡 -->
+      <div class="section-title">💧 喝水（点杯子打卡）</div>
+      <div class="card">
+        <div class="cup-row" id="cup-row">
+          <div class="cup-item" data-cup="0" onclick="toggleCup(0)">
+            <div class="cup-icon">🥛</div><div class="cup-label">1/4</div>
+          </div>
+          <div class="cup-item" data-cup="1" onclick="toggleCup(1)">
+            <div class="cup-icon">🥛</div><div class="cup-label">2/4</div>
+          </div>
+          <div class="cup-item" data-cup="2" onclick="toggleCup(2)">
+            <div class="cup-icon">🥛</div><div class="cup-label">3/4</div>
+          </div>
+          <div class="cup-item" data-cup="3" onclick="toggleCup(3)">
+            <div class="cup-icon">🥛</div><div class="cup-label">4/4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 健康饮食打卡 -->
+      <div class="section-title">🍽️ 健康饮食</div>
+      <div class="card">
+        <div class="plate-row" id="plate-row">
+          <div class="plate-item" data-meal="breakfast" onclick="toggleMeal('breakfast')">
+            <div class="plate-icon">🍳</div><div class="plate-label">早饭</div>
+          </div>
+          <div class="plate-item" data-meal="lunch" onclick="toggleMeal('lunch')">
+            <div class="plate-icon">🍱</div><div class="plate-label">午饭</div>
+          </div>
+          <div class="plate-item" data-meal="dinner" onclick="toggleMeal('dinner')">
+            <div class="plate-icon">🍲</div><div class="plate-label">晚饭</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 零食奶茶 -->
+      <div class="section-title">🧋 零食/奶茶</div>
+      <div class="card">
+        <div class="snack-row">
+          <button class="snack-btn" id="snack-btn-yes" onclick="setSnack(true)" title="今天吃得很健康！">✓</button>
+          <button class="snack-btn" id="snack-btn-no"  onclick="setSnack(false)" title="今天破戒啦">✗</button>
+        </div>
+        <div class="snack-hint" id="snack-hint">点左边 = 没吃零食 &nbsp;|&nbsp; 点右边 = 吃了零食</div>
+      </div>
+
+      <div class="bottom-pad"></div>
     </div>
-    <div class="box-area">
-      <div class="box-title">恭喜！完成 5 次运动，点一个奖励自己 ✨</div>
-      <!-- 5 个奖励，进入页面后由 JS 随机 top/left 放置 -->
-      <div class="reward-item" data-reward="0">
-        ❤️<div class="reward-item-label">爱心</div>
-      </div>
-      <div class="reward-item" data-reward="1">
-        ⭐<div class="reward-item-label">星星</div>
-      </div>
-      <div class="reward-item" data-reward="2">
-        🎆<div class="reward-item-label">烟花</div>
-      </div>
-      <div class="reward-item" data-reward="3">
-        🍰<div class="reward-item-label">蛋糕</div>
-      </div>
-      <div class="reward-item" data-reward="4">
-        🎮<div class="reward-item-label">游戏</div>
-      </div>
-    </div>
+
     <div class="nav-bar">
       <div class="nav-item" onclick="show('page-home')"><span class="nav-icon">🏠</span>首页</div>
-      <div class="nav-item" onclick="show('page-reward')"><span class="nav-icon">🎁</span>奖励</div>
-      <div class="nav-item selected"><span class="nav-icon">🏆</span>盒子</div>
+      <div class="nav-item selected"><span class="nav-icon">✅</span>打卡</div>
+      <div class="nav-item" onclick="show('page-box')"><span class="nav-icon">🎁</span>盒子</div>
+      <div class="nav-item" onclick="show('page-me')"><span class="nav-icon">👤</span>我的</div>
     </div>
   </div>
 
-  <!-- "太棒了" 全屏提示（叠加层，默认隐藏） -->
+  <!-- ========================================================= -->
+  <!-- 页面 3：惊喜盒子                                             -->
+  <!-- ========================================================= -->
+  <div id="page-box" class="page hidden">
+    <div class="app-bar"><span class="app-bar-title">🎁 惊喜盒子</span></div>
+    <div class="box-area">
+      <div class="box-title">恭喜！完成 5 次运动，点一个奖励自己 ✨</div>
+      <div class="reward-item" data-reward="0"><div class="reward-item-label">加载中</div></div>
+      <div class="reward-item" data-reward="1"><div class="reward-item-label">加载中</div></div>
+      <div class="reward-item" data-reward="2"><div class="reward-item-label">加载中</div></div>
+      <div class="reward-item" data-reward="3"><div class="reward-item-label">加载中</div></div>
+      <div class="reward-item" data-reward="4"><div class="reward-item-label">加载中</div></div>
+    </div>
+
+    <div class="nav-bar">
+      <div class="nav-item" onclick="show('page-home')"><span class="nav-icon">🏠</span>首页</div>
+      <div class="nav-item" onclick="show('page-checkin')"><span class="nav-icon">✅</span>打卡</div>
+      <div class="nav-item selected"><span class="nav-icon">🎁</span>盒子</div>
+      <div class="nav-item" onclick="show('page-me')"><span class="nav-icon">👤</span>我的</div>
+    </div>
+  </div>
+
+  <!-- "太棒了" 全屏提示 -->
   <div id="wow-overlay" class="wow-overlay hidden" onclick="closeWow()">
     <div class="wow-text">太棒了！</div>
   </div>
 
+  <!-- ========================================================= -->
+  <!-- 页面 4：我的（每日记录 + 奖励编辑）                           -->
+  <!-- ========================================================= -->
+  <div id="page-me" class="page hidden">
+    <div class="app-bar"><span class="app-bar-title">👤 我的</span></div>
+    <div class="body">
+      <div class="profile-header">
+        <div class="profile-avatar">🔥</div>
+        <div class="profile-name">运动打卡达人</div>
+        <div class="profile-sub" id="me-sub">累计 0 次运动 · 坚持 0 天</div>
+      </div>
 
-  <!-- ============================================================ -->
-  <!-- 页面 3：奖励设置                                              -->
-  <!-- ============================================================ -->
-  <div id="page-reward" class="page hidden">
-    <div class="app-bar" style="padding-left:16px;">
-      <span style="font-size:22px;font-weight:600;color:#8B6F47;">🎁 奖励设置</span>
-    </div>
-    <div class="body body-full">
-      <div class="section-title">5 个奖励（自行输入）</div>
-      <div class="setting-row"><span class="setting-icon">❤️</span><span class="setting-label">奖励 1：爱心</span></div>
-      <div class="setting-row"><span class="setting-icon">⭐</span><span class="setting-label">奖励 2：星星</span></div>
-      <div class="setting-row"><span class="setting-icon">🎆</span><span class="setting-label">奖励 3：烟花</span></div>
-      <div class="setting-row"><span class="setting-icon">�</span><span class="setting-label">奖励 4：蛋糕</span></div>
-      <div class="setting-row"><span class="setting-icon">🎮</span><span class="setting-label">奖励 5：游戏</span></div>
+      <!-- 每日记录 -->
+      <div class="section-title">📋 每日运动记录</div>
+      <div id="me-history"><div class="empty-state">还没有记录，去首页点转盘吧～</div></div>
+
+      <!-- 打卡记录 -->
+      <div class="section-title">📅 打卡记录（今日）</div>
+      <div class="card" id="me-checkin">
+        <div style="font-size:13px;color:#6B5430;line-height:1.9;">
+          <div>💧 喝水：<span id="me-water">0 / 4</span></div>
+          <div>🍳 早饭：<span id="me-breakfast">未打卡</span></div>
+          <div>🍱 午饭：<span id="me-lunch">未打卡</span></div>
+          <div>🍲 晚饭：<span id="me-dinner">未打卡</span></div>
+          <div>🧋 零食/奶茶：<span id="me-snack">未记录</span></div>
+        </div>
+      </div>
+
+      <!-- 奖励编辑 -->
+      <div class="section-title">✏️ 修改惊喜盒子内容</div>
+      <div class="card">
+        <div style="font-size:12px;color:#A88960;margin-bottom:8px;">下方文字会显示在惊喜盒子的 emoji 下方。emoji 不能改，文字可编辑。</div>
+      </div>
+      <div id="reward-edit-list"></div>
+      <button class="reward-edit-save" onclick="saveRewards()">保存修改</button>
+
       <div class="bottom-pad"></div>
     </div>
+
     <div class="nav-bar">
       <div class="nav-item" onclick="show('page-home')"><span class="nav-icon">🏠</span>首页</div>
-      <div class="nav-item selected"><span class="nav-icon">🎁</span>奖励</div>
-      <div class="nav-item" onclick="show('page-box')"><span class="nav-icon">🏆</span>盒子</div>
+      <div class="nav-item" onclick="show('page-checkin')"><span class="nav-icon">✅</span>打卡</div>
+      <div class="nav-item" onclick="show('page-box')"><span class="nav-icon">🎁</span>盒子</div>
+      <div class="nav-item selected"><span class="nav-icon">👤</span>我的</div>
     </div>
   </div>
 
 </div>
 
-
 <script>
-  // =====================================================
-  // STORAGE —— 对应 Flutter 的 shared_preferences
-  // 选型三问：count(int) / history(整体一份 JSON) / rewards(配置)
-  // → 都是"少量键值 / 整体一份" → localStorage ✅
-  // =====================================================
-  const K = {
-    COUNT:    'sm_count',
-    HISTORY:  'sm_history',   // [{emoji, name, time}]
-    REWARDS:  'sm_rewards'    // [{emoji, label}]
-  };
+/* =============================================
+   STORAGE  —— shared_preferences 对应 localStorage
+   ============================================= */
+const K = {
+  COUNT:   'sm_count',
+  HISTORY: 'sm_history',
+  REWARDS: 'sm_rewards',
+  // 打卡数据（用日期做 key，支持多日累计）
+  WATER:   'sm_water_' + todayKey(),   // [0,1,1,0] 4杯
+  MEALS:   'sm_meals_' + todayKey(),   // {breakfast,lunch,dinner}
+  SNACK:   'sm_snack_' + todayKey()    // 1=健康, 0=破戒, null=未填
+};
 
-  const DEFAULTS = {
-    REWARDS: [
-      { emoji: '❤️', label: '爱心' },
-      { emoji: '⭐', label: '星星' },
-      { emoji: '🎆', label: '烟花' },
-      { emoji: '🍰', label: '蛋糕' },
-      { emoji: '🎮', label: '游戏' }
-    ]
-  };
+const DEFAULTS = {
+  REWARDS: [
+    { emoji: '❤️', label: '爱心' },
+    { emoji: '⭐', label: '星星' },
+    { emoji: '🎆', label: '烟花' },
+    { emoji: '🍰', label: '蛋糕' },
+    { emoji: '🎮', label: '游戏' }
+  ],
+  WATER: [0, 0, 0, 0],
+  MEALS: { breakfast: false, lunch: false, dinner: false }
+};
 
-  // —— 读写封装（像 sp.setInt / sp.getStringList） ——
-  function spSetInt(key, val)   { localStorage.setItem(key, String(val)); }
-  function spGetInt(key, d=0)   { const v = localStorage.getItem(key); return v === null ? d : parseInt(v); }
-  function spSetList(key, list) { localStorage.setItem(key, JSON.stringify(list)); }
-  function spGetList(key, d=[]) {
-    try { const v = localStorage.getItem(key); return v === null ? d : JSON.parse(v); }
-    catch(e) { return d; }
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0') + '_' + String(d.getDate()).padStart(2,'0');
+}
+
+// localStorage 读写（对应 sp.setInt / sp.getStringList / sp.setBool）
+function spSetInt(key, v)   { localStorage.setItem(key, String(v)); }
+function spGetInt(key, d=0) { const v = localStorage.getItem(key); return v===null ? d : parseInt(v); }
+function spSetList(key, l)  { localStorage.setItem(key, JSON.stringify(l)); }
+function spGetList(key, d=[]) { try { const v = localStorage.getItem(key); return v===null ? d : JSON.parse(v); } catch(e) { return d; } }
+
+/* =============================================
+   业务数据
+   ============================================= */
+const SPORTS = [
+  { emoji: '🏃', name: '跑步' },
+  { emoji: '🏸', name: '羽毛球' },
+  { emoji: '🏓', name: '乒乓球' },
+  { emoji: '💃', name: '跳舞' },
+  { emoji: '🏊', name: '游泳' }
+];
+
+let isSpinning = false;
+let currentSelected = -1;
+let count = 0;
+let history = [];
+let rewards = [];
+let water = [];     // [0,1,0,1]
+let meals = {};     // {breakfast:false, lunch:true, dinner:false}
+let snack = null;   // 1=健康, 0=破戒, null=未填
+
+/* =============================================
+   init（对应 Flutter initState）
+   ============================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  count   = spGetInt(K.COUNT, 0);
+  history = spGetList(K.HISTORY, []);
+  rewards = spGetList(K.REWARDS, DEFAULTS.REWARDS);
+  water   = spGetList(K.WATER, DEFAULTS.WATER);
+  meals   = spGetList(K.MEALS, DEFAULTS.MEALS);
+  snack   = localStorage.getItem(K.SNACK); // null | "1" | "0"
+
+  updateCounter();
+  renderHomeHistory();
+  renderCheckin();
+  renderRewardsEdit();
+  renderBoxRewards();
+  renderMePage();
+});
+
+/* =============================================
+   页面切换
+   ============================================= */
+function show(target) {
+  ['page-home','page-checkin','page-box','page-me'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById(target).classList.remove('hidden');
+  document.getElementById('dialog-yesno').classList.add('hidden');
+  document.getElementById('wow-overlay').classList.add('hidden');
+
+  if (target === 'page-box') { setTimeout(() => { renderBoxRewards(); shuffleRewards(); }, 30); }
+  if (target === 'page-checkin') { renderCheckin(); }
+  if (target === 'page-me') { renderMePage(); renderRewardsEdit(); }
+}
+
+/* =============================================
+   首页 · 转盘
+   ============================================= */
+function onWheelTap() {
+  if (isSpinning) return;
+  isSpinning = true;
+  const wheel = document.getElementById('wheel');
+  wheel.classList.add('spinning'); wheel.classList.remove('done');
+  document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
+
+  currentSelected = Math.floor(Math.random() * 5);
+  const center = currentSelected * 72 + 36;
+  wheel.style.transform = `rotate(${360 - center + 3*360}deg)`;
+
+  setTimeout(() => {
+    isSpinning = false;
+    wheel.classList.remove('spinning'); wheel.classList.add('done');
+    document.querySelectorAll('.wheel-label').forEach(el => {
+      if (parseInt(el.dataset.index) === currentSelected) el.classList.add('selected-label');
+    });
+    const s = SPORTS[currentSelected];
+    document.getElementById('selected-sport').textContent = `${s.emoji} ${s.name}`;
+    document.getElementById('dialog-yesno').classList.remove('hidden');
+  }, 4600);
+}
+
+function onNo() { document.getElementById('dialog-yesno').classList.add('hidden'); resetWheel(); }
+function onYes() {
+  document.getElementById('dialog-yesno').classList.add('hidden');
+  resetWheel();
+  const sport = SPORTS[currentSelected];
+  const now = new Date();
+  const hh = now.getHours(), mm = String(now.getMinutes()).padStart(2,'0');
+  const ap = hh < 12 ? '上午' : '下午';
+  const h12 = hh < 12 ? hh : hh - 12;
+
+  count++;
+  history.unshift({ emoji: sport.emoji, name: sport.name, time: `${ap} ${String(h12).padStart(2,'0')}:${mm}` });
+  spSetInt(K.COUNT, count);
+  spSetList(K.HISTORY, history);
+  updateCounter();
+  renderHomeHistory();
+  renderMePage();
+
+  if (count >= 5) { count = 0; spSetInt(K.COUNT, count); updateCounter(); setTimeout(() => show('page-box'), 400); }
+}
+function resetWheel() {
+  const w = document.getElementById('wheel');
+  w.style.transition = 'none'; w.style.transform = 'rotate(0deg)'; void w.offsetWidth; w.style.transition = '';
+  w.classList.remove('done');
+  document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
+  currentSelected = -1;
+}
+
+function updateCounter() {
+  document.getElementById('counter-num').textContent = count;
+  document.getElementById('counter-text').textContent = count;
+  document.getElementById('counter-fill').style.width = (count/5*100) + '%';
+}
+function renderHomeHistory() {
+  const el = document.getElementById('home-history');
+  if (!history.length) { el.innerHTML = '<div class="empty-state">今天还没记录哦～点上面转盘开始吧 ✨</div>'; return; }
+  el.innerHTML = history.map(h => `<div class="history-item">${h.emoji} ${h.name}<span class="history-time">${h.time}</span></div>`).join('');
+}
+
+/* =============================================
+   打卡页 · 喝水/饮食/零食
+   ============================================= */
+function toggleCup(i) {
+  water[i] = water[i] ? 0 : 1;
+  spSetList(K.WATER, water);
+  renderCheckin();
+}
+function toggleMeal(meal) {
+  meals[meal] = !meals[meal];
+  spSetList(K.MEALS, meals);
+  renderCheckin();
+}
+function setSnack(val) {
+  snack = val;
+  localStorage.setItem(K.SNACK, val ? '1' : '0');
+  renderCheckin();
+}
+
+function renderCheckin() {
+  // 刷新今日 key（跨天切换）
+  const tk = todayKey();
+  if (K.WATER.indexOf(tk) < 0) {
+    K.WATER = 'sm_water_' + tk; K.MEALS = 'sm_meals_' + tk; K.SNACK = 'sm_snack_' + tk;
+    water = spGetList(K.WATER, DEFAULTS.WATER);
+    meals = spGetList(K.MEALS, DEFAULTS.MEALS);
+    snack = localStorage.getItem(K.SNACK);
   }
 
-  // =====================================================
-  // 业务数据
-  // =====================================================
-  const SPORTS = [
-    { emoji: '🏃', name: '跑步' },
-    { emoji: '🏸', name: '羽毛球' },
-    { emoji: '🏓', name: '乒乓球' },
-    { emoji: '💃', name: '跳舞' },
-    { emoji: '🏊', name: '游泳' }
-  ];
-
-  const SECTORS = 5;
-  const DEG = 360 / SECTORS;
-
-  let isSpinning = false;
-  let currentSelected = -1;
-  let count = 0;
-  let history = [];   // [{emoji, name, time}]
-  let rewards = [];   // [{emoji, label}]
-
-  // =====================================================
-  // init —— 对应 Flutter initState 加载 sp 到成员变量
-  // =====================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    count   = spGetInt(K.COUNT, 0);
-    history = spGetList(K.HISTORY, []);
-    rewards = spGetList(K.REWARDS, DEFAULTS.REWARDS);
-
-    updateCounter();
-    renderHistory();
-    renderRewardsSetting();
+  // 杯子
+  document.querySelectorAll('#cup-row .cup-item').forEach(el => {
+    const i = parseInt(el.dataset.cup);
+    const icon = el.querySelector('.cup-icon');
+    icon.textContent = water[i] ? '🥤' : '🥛';
+    el.style.opacity = water[i] ? 1 : 0.4;
   });
 
-  // =====================================================
-  // UI 渲染
-  // =====================================================
-  function updateCounter() {
-    document.getElementById('counter-num').textContent = count;
-    document.getElementById('counter-text').textContent = count;
-    document.getElementById('counter-fill').style.width = (count / 5 * 100) + '%';
+  // 盘子
+  document.querySelectorAll('#plate-row .plate-item').forEach(el => {
+    const m = el.dataset.meal;
+    el.classList.toggle('done', !!meals[m]);
+  });
+
+  // 零食按钮
+  const btnY = document.getElementById('snack-btn-yes');
+  const btnN = document.getElementById('snack-btn-no');
+  btnY.className = 'snack-btn' + (snack === '1' ? ' yes' : '');
+  btnN.className = 'snack-btn' + (snack === '0' ? ' no' : '');
+
+  // 今日概览
+  const waterCount = water.reduce((a,b)=>a+b, 0);
+  const mealCount = Object.values(meals).filter(Boolean).length;
+  const snackCount = (snack === '1' || snack === '0') ? 1 : 0;
+  const total = waterCount + mealCount + snackCount;
+  document.getElementById('checkin-count').textContent = total;
+
+  const d = new Date();
+  document.getElementById('checkin-date').textContent =
+    `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} · 周${'日一二三四五六'[d.getDay()]}`;
+}
+
+/* =============================================
+   惊喜盒子
+   ============================================= */
+function renderBoxRewards() {
+  const items = document.querySelectorAll('#page-box .reward-item');
+  items.forEach((item, i) => {
+    const r = rewards[i] || DEFAULTS.REWARDS[i];
+    // 清空旧内容重填（保留 label div）
+    item.innerHTML = `${r.emoji}<div class="reward-item-label">${r.label}</div>`;
+    item.onclick = onRewardTap;
+  });
+}
+
+function shuffleRewards() {
+  const items = document.querySelectorAll('#page-box .reward-item');
+  const padTop = 70, padSide = 12, padBottom = 16;
+  const areaH = 812 - 64 - 80;
+  const itemW = 76, itemH = 76 + 18;
+  const placed = [];
+
+  items.forEach(item => {
+    let x, y, tries = 0;
+    do {
+      x = padSide + Math.random() * (375 - itemW - padSide*2);
+      y = padTop + Math.random() * (areaH - itemH - padTop - padBottom);
+      tries++;
+    } while (tries < 60 && placed.some(r =>
+      x < r.x+r.w+6 && x+itemW+6 > r.x && y < r.y+r.h+6 && y+itemH+6 > r.y));
+    placed.push({x,y,w:itemW,h:itemH});
+    item.style.left = x+'px'; item.style.top = y+'px';
+    item.style.transform = 'rotate(' + (Math.random()*24-12).toFixed(1) + 'deg)';
+  });
+}
+
+function onRewardTap() { document.getElementById('wow-overlay').classList.remove('hidden'); }
+function closeWow() { document.getElementById('wow-overlay').classList.add('hidden'); }
+
+/* =============================================
+   我的页
+   ============================================= */
+function renderMePage() {
+  // 累计次数
+  const total = history.length;
+  document.getElementById('me-sub').textContent = `累计 ${total} 次运动 · 继续加油！`;
+
+  // 运动历史
+  const hEl = document.getElementById('me-history');
+  if (!history.length) { hEl.innerHTML = '<div class="empty-state">还没有记录，去首页点转盘吧～</div>'; }
+  else {
+    hEl.innerHTML = history.slice(0, 20).map(h => `<div class="history-item">${h.emoji} ${h.name}<span class="history-time">${h.time}</span></div>`).join('');
   }
 
-  function renderHistory() {
-    const list = document.getElementById('history-list');
-    if (!history.length) {
-      list.innerHTML = '<div style="text-align:center;color:#A88960;font-size:13px;padding:16px;">今天还没记录哦～点上面转盘开始吧 ✨</div>';
-      return;
-    }
-    list.innerHTML = history.map(h =>
-      `<div class="history-item">${h.emoji} ${h.name}<span class="history-time">${h.time}</span></div>`
-    ).join('');
-  }
+  // 今日打卡摘要
+  const wCount = water.reduce((a,b)=>a+b,0);
+  document.getElementById('me-water').textContent = `${wCount} / 4`;
+  document.getElementById('me-breakfast').textContent = meals.breakfast ? '✅ 已打卡' : '未打卡';
+  document.getElementById('me-lunch').textContent = meals.lunch ? '✅ 已打卡' : '未打卡';
+  document.getElementById('me-dinner').textContent = meals.dinner ? '✅ 已打卡' : '未打卡';
+  document.getElementById('me-snack').textContent = snack === null ? '未记录' : (snack === '1' ? '✅ 健康（没吃）' : '⚠️ 吃了零食');
+}
 
-  function renderRewardsSetting() {
-    const container = document.querySelector('#page-reward .body');
-    if (!container) return;
-    // 只替换 setting-row 区域，保留底部 "保存" 按钮
-    const rows = rewards.map((r, i) =>
-      `<div class="setting-row">
-         <span class="setting-icon">${r.emoji}</span>
-         <span class="setting-label">奖励 ${i+1}：${r.label}</span>
-       </div>`
-    ).join('');
-    container.innerHTML = `
-      <div class="section-title">5 个奖励（可点击编辑）</div>
-      ${rows}
-      <div style="margin:16px;text-align:center;color:#A88960;font-size:11px;">（数据持久化存储，刷新不丢）</div>
-      <div class="bottom-pad"></div>
-    `;
-  }
+/* =============================================
+   奖励编辑（我的页 → 改盒子文字）
+   ============================================= */
+function renderRewardsEdit() {
+  const list = document.getElementById('reward-edit-list');
+  list.innerHTML = rewards.map((r, i) =>
+    `<div class="reward-edit-row">
+       <span class="reward-edit-emoji">${r.emoji}</span>
+       <input class="reward-edit-input" id="reward-input-${i}" value="${r.label}" placeholder="输入奖励文字">
+     </div>`
+  ).join('');
+}
 
-  // =====================================================
-  // 页面切换
-  // =====================================================
-  function show(target) {
-    ['page-home', 'page-box', 'page-reward'].forEach(id => document.getElementById(id).classList.add('hidden'));
-    document.getElementById(target).classList.remove('hidden');
-    document.getElementById('dialog-yesno').classList.add('hidden');
-    document.getElementById('wow-overlay').classList.add('hidden');
+function saveRewards() {
+  rewards.forEach((r, i) => {
+    const input = document.getElementById('reward-input-' + i);
+    if (input && input.value.trim()) r.label = input.value.trim();
+  });
+  spSetList(K.REWARDS, rewards);
 
-    if (target === 'page-box') setTimeout(shuffleRewards, 30);
-  }
-
-  // =====================================================
-  // 惊喜盒子：随机分布
-  // =====================================================
-  function shuffleRewards() {
-    const items = document.querySelectorAll('.reward-item');
-    const areaW = 375, areaH = 812 - 64 - 80;
-    const itemW = 76, itemH = 76 + 18;
-    const padTop = 70, padSide = 12, padBottom = 16;
-    const placed = [];
-
-    items.forEach(item => {
-      let x, y, tries = 0;
-      do {
-        x = padSide + Math.random() * (areaW - itemW - padSide * 2);
-        y = padTop + Math.random() * (areaH - itemH - padTop - padBottom);
-        tries++;
-      } while (tries < 60 && placed.some(r =>
-        x < r.x + r.w + 6 && x + itemW + 6 > r.x &&
-        y < r.y + r.h + 6 && y + itemH + 6 > r.y
-      ));
-      placed.push({ x, y, w: itemW, h: itemH });
-      item.style.left = x + 'px';
-      item.style.top = y + 'px';
-      item.style.transform = 'rotate(' + (Math.random() * 24 - 12).toFixed(1) + 'deg)';
-      item.onclick = onRewardTap;
-    });
-  }
-
-  function onRewardTap() {
-    document.getElementById('wow-overlay').classList.remove('hidden');
-  }
-  function closeWow() {
-    document.getElementById('wow-overlay').classList.add('hidden');
-  }
-
-  // =====================================================
-  // 转盘
-  // =====================================================
-  function onWheelTap() {
-    if (isSpinning) return;
-    isSpinning = true;
-
-    const wheel = document.getElementById('wheel');
-    wheel.classList.add('spinning');
-    wheel.classList.remove('done');
-    document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
-
-    currentSelected = Math.floor(Math.random() * SECTORS);
-    const center = currentSelected * DEG + DEG / 2;
-    const targetDeg = 360 - center + 3 * 360;
-    wheel.style.transform = `rotate(${targetDeg}deg)`;
-
-    setTimeout(() => {
-      isSpinning = false;
-      wheel.classList.remove('spinning');
-      wheel.classList.add('done');
-
-      document.querySelectorAll('.wheel-label').forEach(el => {
-        if (parseInt(el.dataset.index) === currentSelected) el.classList.add('selected-label');
-      });
-
-      const sport = SPORTS[currentSelected];
-      document.getElementById('selected-sport').textContent = `${sport.emoji} ${sport.name}`;
-      document.getElementById('dialog-yesno').classList.remove('hidden');
-    }, 4600);
-  }
-
-  // =====================================================
-  // Dialog 按钮
-  // =====================================================
-  function onNo() {
-    document.getElementById('dialog-yesno').classList.add('hidden');
-    resetWheel();
-  }
-
-  function onYes() {
-    document.getElementById('dialog-yesno').classList.add('hidden');
-    resetWheel();
-
-    const sport = SPORTS[currentSelected];
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const ap = hh < 12 ? '上午' : '下午';
-    const h12 = hh < 12 ? hh : String(now.getHours()-12).padStart(2,'0');
-    const time = `${ap} ${h12}:${mm}`;
-
-    // —— 业务逻辑 + 持久化（sp.setInt / sp.setStringList）——
-    count++;
-    history.unshift({ emoji: sport.emoji, name: sport.name, time });
-
-    spSetInt(K.COUNT, count);
-    spSetList(K.HISTORY, history);
-
-    updateCounter();
-    renderHistory();
-
-    if (count >= 5) {
-      count = 0;
-      spSetInt(K.COUNT, count);
-      updateCounter();
-      setTimeout(() => show('page-box'), 400);
-    }
-  }
-
-  function resetWheel() {
-    const wheel = document.getElementById('wheel');
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
-    void wheel.offsetWidth;
-    wheel.style.transition = '';
-    wheel.classList.remove('done');
-    document.querySelectorAll('.wheel-label.selected-label').forEach(el => el.classList.remove('selected-label'));
-    currentSelected = -1;
-  }
-
-  // 盒子页"收下奖励"按钮：清空历史 + 计数归零 + 跳首页
-  function resetCount() {
-    count = 0;
-    history = [];
-    spSetInt(K.COUNT, count);
-    spSetList(K.HISTORY, history);
-    updateCounter();
-    renderHistory();
-  }
+  // Toast 提示
+  const btn = document.querySelector('.reward-edit-save');
+  const orig = btn.textContent;
+  btn.textContent = '✅ 已保存';
+  btn.style.background = '#4CAF50';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = '#FF8A65'; }, 1500);
+}
 </script>
 
 </body>
