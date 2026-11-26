@@ -55,10 +55,11 @@
     .body-full { overflow-y: auto; }
 
     .app-bar {
-      height: 64px; width: 100%;
+      min-height: 64px; width: 100%;
       position: relative; flex-shrink: 0;
-      background: #FFF8E1; padding: 24px 16px 0;
-      display: flex; align-items: center;
+      background: #FFF8E1; padding: 16px 16px 8px;
+      display: flex; flex-direction: column; align-items: flex-start;
+      justify-content: center;
     }
     .app-bar-title { font-size: 22px; font-weight: 600; color: #8B6F47; }
 
@@ -285,7 +286,7 @@
   <!-- 页面 1：首页（转盘）                                         -->
   <!-- ========================================================= -->
   <div id="page-home" class="page">
-    <div class="app-bar" style="flex-direction:column;align-items:flex-start;padding-top:28px;">
+    <div class="app-bar">
       <span class="app-bar-title">🏃 运动记录</span>
       <span id="home-date" style="font-size:12px;color:#A88960;margin-top:2px;"></span>
     </div>
